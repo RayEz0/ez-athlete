@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ez-athlete",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-03",
+  // The vanilla app at the repo root is the site. Files listed in .assetsignore are not served.
+  // Only /api/* runs the Worker; everything else is plain static assets.
+  "assets": { "directory": ".", "binding": "ASSETS", "run_worker_first": ["/api/*"] },
+  // Tracker data. No id on purpose: `wrangler deploy` creates the namespace on first deploy
+  // and reuses it afterwards. To pin an existing namespace, add "id": "<namespace id>".
+  "kv_namespaces": [{ "binding": "EZ_DATA" }],
+  "observability": { "enabled": true }
+}

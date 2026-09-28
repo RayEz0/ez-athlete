@@ -1,16 +1,26 @@
-{
-  "name": "EZ Athlete \u00b7 76 KG Protocol",
-  "short_name": "EZ Athlete",
+﻿{
+  "name": "EZ LIFE STYLE TRACKER",
+  "short_name": "EZ LIFE STYLE",
+  "description": "Personal athletic training, basketball, nutrition, recovery and daily progress tracker.",
+  "id": "./",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#7c5cff",
+  "background_color": "#f3f5fa",
+  "theme_color": "#6d3cf5",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
