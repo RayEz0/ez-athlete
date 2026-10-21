@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024"><defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2C2E33"/><stop offset="1" stop-color="#0B0C0E"/></linearGradient>
+<radialGradient id="sheen" cx="0.3" cy="0.12" r="0.9"><stop offset="0" stop-color="#fff" stop-opacity="0.14"/><stop offset="0.6" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<linearGradient id="w" gradientUnits="userSpaceOnUse" x1="0" y1="150" x2="0" y2="900"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E4E6EB"/></linearGradient>
+<filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000" flood-opacity="0.6"/></filter>
+<linearGradient id="fade" gradientUnits="userSpaceOnUse" x1="150" y1="0" x2="460" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient></defs><rect width="1024" height="1024" fill="url(#bg)"/><rect width="1024" height="1024" fill="url(#sheen)"/><g transform="translate(512 512) scale(.62) translate(-505 -500)"><g transform="translate(-20,0)" filter="url(#sh)"><g stroke="url(#fade)" stroke-linecap="round" stroke-width="96"><path d="M150 300 H455"/><path d="M150 512 H410"/><path d="M150 724 H455"/></g>
+<path d="M565 300 H790 L660 500 H760 L575 724 H800" fill="none" stroke="url(#w)" stroke-linecap="round" stroke-linejoin="round" stroke-width="100"/><circle cx="860" cy="190" r="58" fill="url(#w)"/></g></g></svg>
