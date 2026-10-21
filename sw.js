@@ -1,8 +1,8 @@
 // EZ LIFE STYLE TRACKER service worker.
 // Network-first for everything (so a new deploy is picked up on the next load), falling back
 // to the cache when offline. /api/* is never cached. Bump CACHE when the asset list changes.
-const CACHE = 'ez-life-style-v5.4.2';
-const ASSETS = ['./', './index.html', './app.css', './js/theme.js', './js/app.js', './js/program.js', './js/merge.js', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE = 'ez-life-style-v5.5.0';
+const ASSETS = ['./', './index.html', './app.css', './js/theme.js', './js/app.js', './js/program.js', './js/merge.js', './js/nutrition.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

@@ -413,6 +413,67 @@ details.prog.locked .ex input{opacity:.5}
 .seg input:checked+label{border-color:transparent;background:var(--grad);color:var(--on-accent);box-shadow:0 10px 20px -12px var(--a-glow)}
 .seg input:focus-visible+label{outline:3px solid var(--a-glow);outline-offset:2px}
 
+/* ---------- nutrition (food log) ---------- */
+.nut-datebar{display:flex;align-items:center;gap:8px;padding:12px}
+.nut-datebar .input{flex:1;min-width:0;text-align:center;font-weight:750}
+.nut-next svg{transform:rotate(180deg)}
+.icon-btn:disabled{opacity:.4;cursor:not-allowed}
+.macros{display:grid;gap:12px}
+.macro-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.macro .lbl{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.macro .val{font-weight:800;font-variant-numeric:tabular-nums}
+.macro .val b{margin-left:8px;font-size:12px;color:var(--a-ink)}
+.macro .bar{margin-top:5px}
+.macro-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.macro.over .macro-sub{color:var(--warn);font-weight:700}
+.nut-quick .card-h{margin-bottom:10px}
+.quick-to{display:flex;align-items:center;gap:8px}
+.input-sm{min-height:36px;padding:6px 10px;font-size:14px;border-radius:10px;width:auto}
+.quick-chips{display:flex;flex-wrap:wrap;gap:8px}
+.quick-chip{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-height:44px;padding:8px 12px;border-radius:12px;border:1px solid var(--a-soft2);background:var(--a-soft);color:var(--a-ink);cursor:pointer;text-align:left;max-width:100%}
+.quick-chip b{font-size:13.5px}
+.quick-chip span{font-size:11.5px;color:var(--ink2)}
+.quick-chip:hover{border-color:var(--a2)}
+.nut-meals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:18px;align-items:start}
+#nutWeek{align-self:start}
+.nut-meals .card{margin:0}
+.meal-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.meal-sub{font-size:12.5px;font-weight:750;color:var(--a-ink)}
+.meal.is-empty .meal-h h3{color:var(--muted)}
+.food-list{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.food-item{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;justify-content:space-between;padding:10px;border:1px solid var(--line2);border-radius:12px;background:var(--surface-2)}
+.fi-main{min-width:0;flex:1 1 180px;overflow-wrap:anywhere}
+.fi-actions{display:flex;gap:6px;flex-wrap:wrap}
+.fi-actions .input-sm{max-width:120px}
+.meal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.nut-panel>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;min-height:44px}
+.nut-panel>summary::-webkit-details-marker{display:none}
+.nut-panel[open] .chev{transform:rotate(180deg)}
+.nut-panel-body{margin-top:12px}
+.nut-target-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}
+.saved-item{flex-wrap:wrap}
+.modal-wide{width:min(94vw,560px)}
+.modal{max-height:calc(100dvh - 24px);overflow-y:auto}
+.food-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fg-full{grid-column:1/-1}
+.serv{border:0;margin:0;padding:0}
+.serv-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:6px}
+.serv-row input{position:absolute;opacity:0;pointer-events:none}
+.serv-row label{display:grid;place-items:center;min-height:42px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-weight:800;font-size:13px;cursor:pointer}
+.serv-row input:checked+label{border-color:transparent;background:var(--grad);color:var(--on-accent)}
+.serv-row input:focus-visible+label{outline:3px solid var(--a-glow);outline-offset:2px}
+.serv .input{margin-top:8px}
+.sm-h{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--a-ink);margin:14px 0 8px}
+.sm-rows{display:grid;gap:10px;margin-bottom:10px}
+.sm-row{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:10px;padding-right:44px;border:1px solid var(--line2);border-radius:12px;background:var(--surface-2)}
+.sm-f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.sm-f span{font-size:11px;font-weight:750;color:var(--muted)}
+.sm-f .input-sm{width:100%}
+.sm-name{grid-column:1/-1}
+.sm-del{position:absolute;top:8px;right:8px;width:30px;min-height:30px;padding:0}
+.log-tot{font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:6px;overflow-wrap:anywhere}
+.log-meal{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+
 /* ---------- history lists ---------- */
 .hist{display:grid;gap:8px}
 .hist-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--line2);border-radius:14px;background:var(--surface);min-width:0}
@@ -511,6 +572,13 @@ details.prog.locked .ex input{opacity:.5}
   body.lock{overflow:hidden}
 }
 @media (max-width:640px){
+  .nut-meals{grid-template-columns:minmax(0,1fr)}
+  .nut-target-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nut-target-form .btn{grid-column:1/-1}
+  .sm-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .fi-actions{width:100%}
+  .fi-actions .input-sm{flex:1;max-width:none}
+  .quick-chip{flex:1 1 calc(50% - 8px)}
   .card{padding:17px;border-radius:18px;margin-bottom:14px}
   .checkin-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .checkin-form .btn{grid-column:1/-1}

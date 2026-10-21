@@ -1,33 +1,71 @@
 // Shared by the browser app and the Cloudflare Worker (worker.js), so both sides
 // merge state with exactly the same rules.
 //
-// State (schema v5):
+// State (schema v6):
 //   activities: [{ id, date:'YYYY-MM-DD', type, subtype?, code?, name, details, createdAt, updatedAt }]
+//               food log = one activity per item: type 'food', details { meal, qty, unit, kcal, protein, carbs, fat, fibre, ... }
+//   savedMeals: [{ id, name, items:[{ name, qty, unit, kcal, protein, carbs, fat, fibre }], createdAt, updatedAt }]
+//   targets:    [{ id, effective:'YYYY-MM-DD', kcal, protein, carbs, fat, fibre, updatedAt }] — a target applies from its date on
 //   checks:     { 'YYYY-MM-DD': { taskKey: { v:boolean, t:isoTimestamp } } }
-//   deleted:    { activityId: isoTimestamp }   — tombstones so deletes/undos propagate across devices
+//   deleted:    { id: isoTimestamp }   — tombstones (any collection) so deletes/undos propagate across devices
 //
 // Merge rules (deterministic, never "replace everything"):
-//   - activities are unioned by id; for the same id the newer updatedAt wins
-//   - a tombstone removes an activity unless the activity was updated after the delete
+//   - activities, savedMeals and targets are unioned by id; for the same id the newer updatedAt wins
+//   - a tombstone removes a record unless the record was updated after the delete
 //   - checklist ticks merge per date + task; newer timestamp wins
+//
+// v5 → v6: the old one-per-day 'nutrition' entries become a single food item named
+// "Daily total (legacy)" on the same date (deterministic id, same timestamps), and the old
+// record is tombstoned. Runs inside normalizeState, so every device and the Worker convert
+// identically and an old device can never bring the old record back.
 
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function blankState() {
-  return { schemaVersion: SCHEMA_VERSION, activities: [], checks: {}, deleted: {}, meta: {} };
+  return { schemaVersion: SCHEMA_VERSION, activities: [], savedMeals: [], targets: [], checks: {}, deleted: {}, meta: {} };
 }
 
 function isObj(x) { return x && typeof x === 'object' && !Array.isArray(x); }
+const num = v => (Number.isFinite(Number(v)) && v !== null && v !== '' ? Number(v) : 0);
+
+function legacyFood(a) {
+  const d = isObj(a.details) ? a.details : {};
+  const stamp = a.updatedAt || a.createdAt || `${a.date}T12:00:00.000Z`;
+  return {
+    id: `food-legacy-${a.id}`, date: a.date, type: 'food', name: 'Daily total (legacy)',
+    createdAt: a.createdAt || stamp, updatedAt: stamp,
+    details: { meal: 'other', qty: 1, unit: 'pcs', kcal: num(d.calories), protein: num(d.protein), carbs: num(d.carbs), fat: num(d.fat), fibre: 0, legacy: true, ...(d.notes ? { notes: String(d.notes) } : {}) },
+  };
+}
 
 export function normalizeState(input) {
   const s = isObj(input) ? input : {};
   const out = blankState();
   out.meta = isObj(s.meta) ? { ...s.meta } : {};
+  if (isObj(s.deleted)) for (const [id, t] of Object.entries(s.deleted)) if (typeof t === 'string') out.deleted[id] = t;
   if (Array.isArray(s.activities)) {
     for (const a of s.activities) {
       if (!isObj(a) || typeof a.id !== 'string' || !a.id || !DATE_RE.test(a.date || '') || typeof a.type !== 'string') continue;
+      if (a.type === 'nutrition') { // v5 → v6
+        const f = legacyFood(a);
+        out.activities.push(f);
+        if (!out.deleted[a.id] || out.deleted[a.id] < f.updatedAt) out.deleted[a.id] = f.updatedAt;
+        continue;
+      }
       out.activities.push(a);
+    }
+  }
+  if (Array.isArray(s.savedMeals)) {
+    for (const m of s.savedMeals) {
+      if (!isObj(m) || typeof m.id !== 'string' || !m.id || typeof m.name !== 'string' || !Array.isArray(m.items)) continue;
+      out.savedMeals.push(m);
+    }
+  }
+  if (Array.isArray(s.targets)) {
+    for (const t of s.targets) {
+      if (!isObj(t) || typeof t.id !== 'string' || !t.id || !DATE_RE.test(t.effective || '')) continue;
+      out.targets.push(t);
     }
   }
   if (isObj(s.checks)) {
@@ -38,8 +76,16 @@ export function normalizeState(input) {
       out.checks[date] = day;
     }
   }
-  if (isObj(s.deleted)) for (const [id, t] of Object.entries(s.deleted)) if (typeof t === 'string') out.deleted[id] = t;
   return out;
+}
+
+function unionById(lists, deleted) {
+  const byId = new Map();
+  for (const x of lists.flat()) {
+    const prev = byId.get(x.id);
+    if (!prev || String(x.updatedAt || '') > String(prev.updatedAt || '')) byId.set(x.id, x);
+  }
+  return [...byId.values()].filter(x => !(deleted[x.id] && deleted[x.id] >= String(x.updatedAt || '')));
 }
 
 export function mergeStates(a, b) {
@@ -47,14 +93,12 @@ export function mergeStates(a, b) {
   const deleted = { ...A.deleted };
   for (const [id, t] of Object.entries(B.deleted)) if (!deleted[id] || t > deleted[id]) deleted[id] = t;
 
-  const byId = new Map();
-  for (const x of [...A.activities, ...B.activities]) {
-    const prev = byId.get(x.id);
-    if (!prev || String(x.updatedAt || '') > String(prev.updatedAt || '')) byId.set(x.id, x);
-  }
-  const activities = [...byId.values()]
-    .filter(x => !(deleted[x.id] && deleted[x.id] >= String(x.updatedAt || '')))
+  const activities = unionById([A.activities, B.activities], deleted)
     .sort((x, y) => x.date.localeCompare(y.date) || String(x.createdAt || '').localeCompare(String(y.createdAt || '')) || x.id.localeCompare(y.id));
+  const savedMeals = unionById([A.savedMeals, B.savedMeals], deleted)
+    .sort((x, y) => String(x.createdAt || '').localeCompare(String(y.createdAt || '')) || x.id.localeCompare(y.id));
+  const targets = unionById([A.targets, B.targets], deleted)
+    .sort((x, y) => x.effective.localeCompare(y.effective) || x.id.localeCompare(y.id));
 
   const checks = {};
   for (const src of [A.checks, B.checks]) {
@@ -63,14 +107,15 @@ export function mergeStates(a, b) {
       for (const [k, v] of Object.entries(tasks)) if (!day[k] || v.t > day[k].t) day[k] = v;
     }
   }
-  return { schemaVersion: SCHEMA_VERSION, activities, checks, deleted, meta: { ...B.meta, ...A.meta } };
+  return { schemaVersion: SCHEMA_VERSION, activities, savedMeals, targets, checks, deleted, meta: { ...B.meta, ...A.meta } };
 }
 
 // Deterministic stringify so two equal states compare equal.
 export function stableString(s) {
   const n = normalizeState(s);
   const sortObj = o => Object.keys(o).sort().reduce((acc, k) => { acc[k] = isObj(o[k]) ? sortObj(o[k]) : o[k]; return acc; }, {});
-  return JSON.stringify({ activities: n.activities, checks: sortObj(n.checks), deleted: sortObj(n.deleted) });
+  const byId = l => [...l].sort((x, y) => x.id.localeCompare(y.id));
+  return JSON.stringify({ activities: n.activities, savedMeals: byId(n.savedMeals), targets: byId(n.targets), checks: sortObj(n.checks), deleted: sortObj(n.deleted) });
 }
 
 // ---- v4 → v5 migration -------------------------------------------------------

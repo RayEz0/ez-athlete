@@ -101,7 +101,7 @@
       <div class="hero-day"><b>DAY</b><strong id="heroDayNum">1</strong><span id="heroDaySub"></span></div>
       <p>full-body athletic training · basketball performance · disciplined fat loss</p>
       <div class="hero-stats">
-        <div><b>76 kg</b><span>Target</span></div><div><b>160 g</b><span>Protein / day</span></div>
+        <div><b>76 kg</b><span>Target</span></div><div><b id="heroProtein">160 g</b><span>Protein / day</span></div>
         <div><b>10k</b><span>Steps / day</span></div><div><b>4 + 1</b><span>Gym sessions / week</span></div>
       </div>
     </div>
@@ -243,21 +243,45 @@
 
 <!-- ============ NUTRITION ============ -->
 <section class="page" id="nutrition" aria-label="Nutrition">
-  <div class="page-head"><div><div class="eyebrow">Daily logging</div><h1>Nutrition</h1><p class="lead">Log your daily totals. One entry per day; logging again for the same day updates that entry.</p></div></div>
-  <div class="dash-grid">
-    <div class="card span-7">
-      <div class="card-h"><h2>Log daily nutrition</h2><div class="row"><span class="chip">~2,200 kcal</span><span class="chip">160 g protein</span></div></div>
-      <form class="form-grid" data-form="nutrition" novalidate>
-        <div class="field"><label for="nutDate">Date</label><input id="nutDate" class="input" type="date"></div>
-        <div class="field"><label for="nutCalories">Calories (kcal)</label><input id="nutCalories" class="input" type="number" inputmode="numeric" min="0" max="10000" step="1" placeholder="e.g. 2180"></div>
-        <div class="field"><label for="nutProtein">Protein (g)</label><input id="nutProtein" class="input" type="number" inputmode="numeric" min="0" max="600" step="1" placeholder="e.g. 160"></div>
-        <button class="btn btn-primary" type="submit" id="nutSubmit">LOG NUTRITION</button>
-      </form>
-      <div class="form-msg" id="nutMsg" aria-live="polite"></div>
-    </div>
-    <div class="card span-5" id="nutToday"></div>
+  <div class="page-head"><div><div class="eyebrow">Food log</div><h1>Nutrition</h1><p class="lead">Log what you eat, meal by meal. Totals, targets and progress update as you go.</p></div></div>
+  <div class="card nut-datebar">
+    <button type="button" class="icon-btn" data-action="nut-step" data-step="-1" aria-label="Previous day"><svg class="i"><use href="#i-left"/></svg></button>
+    <label class="sr-only" for="nutDay">Day</label>
+    <input id="nutDay" class="input" type="date">
+    <button type="button" class="icon-btn nut-next" data-action="nut-step" data-step="1" aria-label="Next day"><svg class="i"><use href="#i-left"/></svg></button>
+    <button type="button" class="btn btn-sm" data-action="nut-today" id="nutTodayBtn">Today</button>
   </div>
-  <div class="card" style="margin-top:18px"><div class="card-h"><h2>Daily history</h2></div><div class="hist" id="nutHistory"></div></div>
+  <div class="dash-grid">
+    <div class="card span-7" id="nutTotals"></div>
+    <div class="card span-5" id="nutWeek"></div>
+  </div>
+  <div class="card nut-quick" id="nutQuick"></div>
+  <div class="nut-meals" id="nutMeals"></div>
+  <details class="card nut-panel" id="savedPanel">
+    <summary><span><b>Saved meals</b> <span class="small" id="savedCount"></span></span><span class="chev" aria-hidden="true"><svg class="i"><use href="#i-down"/></svg></span></summary>
+    <div class="nut-panel-body">
+      <p class="small">Build a meal once (each ingredient with its own values) and add it to any day with a servings multiplier. Logged entries keep their own copy of the values, so editing a saved meal never changes past logs.</p>
+      <div class="hist" id="savedList"></div>
+      <button type="button" class="btn btn-ghost btn-block" data-action="saved-new" style="margin-top:12px">+ New saved meal</button>
+    </div>
+  </details>
+  <details class="card nut-panel" id="targetsPanel">
+    <summary><span><b>Targets</b> <span class="small" id="targetsSummary"></span></span><span class="chev" aria-hidden="true"><svg class="i"><use href="#i-down"/></svg></span></summary>
+    <div class="nut-panel-body">
+      <p class="small">Targets apply from their “effective from” date onward. Earlier days keep the targets that applied then.</p>
+      <form class="nut-target-form" data-form="targets" novalidate>
+        <div class="field"><label for="tgKcal">Calories (kcal)</label><input class="input" id="tgKcal" type="number" inputmode="numeric" min="500" max="10000" step="1"></div>
+        <div class="field"><label for="tgProtein">Protein (g)</label><input class="input" id="tgProtein" type="number" inputmode="decimal" min="0" max="600" step="1"></div>
+        <div class="field"><label for="tgCarbs">Carbs (g)</label><input class="input" id="tgCarbs" type="number" inputmode="decimal" min="0" max="1500" step="1"></div>
+        <div class="field"><label for="tgFat">Fat (g)</label><input class="input" id="tgFat" type="number" inputmode="decimal" min="0" max="500" step="1"></div>
+        <div class="field"><label for="tgFibre">Fibre (g)</label><input class="input" id="tgFibre" type="number" inputmode="decimal" min="0" max="200" step="1"></div>
+        <div class="field"><label for="tgFrom">Effective from</label><input class="input" id="tgFrom" type="date"></div>
+        <button class="btn btn-primary" type="submit">SAVE TARGETS</button>
+      </form>
+      <div class="form-msg" id="tgMsg" aria-live="polite"></div>
+      <div class="hist" id="targetsHistory" style="margin-top:10px"></div>
+    </div>
+  </details>
 </section>
 
 <!-- ============ RECOVERY ============ -->
@@ -301,6 +325,61 @@
     <div class="field"><label for="wdInput">New weight (kg)</label><input class="input" id="wdInput" type="number" inputmode="decimal" step="0.1" min="30" max="250"></div>
     <div class="form-msg" id="wdMsg" aria-live="polite"></div>
     <div class="modal-actions"><button class="btn" type="submit" value="cancel">Cancel</button><button class="btn btn-primary" type="submit" value="change" id="wdChange">Change Weight</button></div>
+  </form>
+</dialog>
+
+<dialog class="modal modal-wide" id="foodDialog" aria-labelledby="fdTitle">
+  <form data-form="food" novalidate>
+    <h2 id="fdTitle">Add food</h2>
+    <div class="food-grid">
+      <div class="field fg-full"><label for="fdMeal">Meal</label><select class="input" id="fdMeal"></select></div>
+      <div class="field fg-full"><label for="fdName">Food</label><input class="input" id="fdName" maxlength="80" placeholder="e.g. Paneer rice bowl" autocomplete="off"></div>
+      <div class="field"><label for="fdQty">Quantity</label><input class="input" id="fdQty" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 250"></div>
+      <div class="field"><label for="fdUnit">Unit</label><select class="input" id="fdUnit"></select></div>
+      <div class="field"><label for="fdKcal">kcal</label><input class="input" id="fdKcal" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+      <div class="field"><label for="fdProtein">Protein (g)</label><input class="input" id="fdProtein" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+      <div class="field"><label for="fdCarbs">Carbs (g)</label><input class="input" id="fdCarbs" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+      <div class="field"><label for="fdFat">Fat (g)</label><input class="input" id="fdFat" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+      <div class="field"><label for="fdFibre">Fibre (g) <span class="small">optional</span></label><input class="input" id="fdFibre" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+    </div>
+    <div class="form-msg" id="fdMsg" aria-live="polite"></div>
+    <div class="modal-actions"><button class="btn" type="button" data-action="dialog-close">Cancel</button><button class="btn btn-primary" type="submit" id="fdSubmit">ADD</button></div>
+  </form>
+</dialog>
+
+<dialog class="modal modal-wide" id="savedAddDialog" aria-labelledby="saTitle">
+  <form data-form="saved-add" novalidate>
+    <h2 id="saTitle">Add saved meal</h2>
+    <div class="food-grid">
+      <div class="field fg-full"><label for="saMeal">Saved meal</label><select class="input" id="saMeal"></select></div>
+      <div class="field fg-full"><label for="saTo">Add to</label><select class="input" id="saTo"></select></div>
+      <fieldset class="fg-full serv"><legend class="small">Servings</legend>
+        <div class="serv-row">
+          <input type="radio" name="serv" id="sv05" value="0.5"><label for="sv05">0.5</label>
+          <input type="radio" name="serv" id="sv1" value="1" checked><label for="sv1">1</label>
+          <input type="radio" name="serv" id="sv15" value="1.5"><label for="sv15">1.5</label>
+          <input type="radio" name="serv" id="sv2" value="2"><label for="sv2">2</label>
+          <input type="radio" name="serv" id="svC" value="custom"><label for="svC">Custom</label>
+        </div>
+        <input class="input" id="saCustom" type="number" inputmode="decimal" min="0.1" max="20" step="any" placeholder="e.g. 0.75" aria-label="Custom servings" hidden>
+      </fieldset>
+    </div>
+    <div class="note" id="saPreview" style="margin-top:12px"></div>
+    <div class="form-msg" id="saMsg" aria-live="polite"></div>
+    <div class="modal-actions"><button class="btn" type="button" data-action="dialog-close">Cancel</button><button class="btn btn-primary" type="submit">ADD</button></div>
+  </form>
+</dialog>
+
+<dialog class="modal modal-wide" id="savedMealDialog" aria-labelledby="smTitle">
+  <form data-form="saved-meal" novalidate>
+    <h2 id="smTitle">New saved meal</h2>
+    <div class="field"><label for="smName">Name</label><input class="input" id="smName" maxlength="80" placeholder="e.g. Protein oats" autocomplete="off"></div>
+    <h4 class="sm-h">Ingredients</h4>
+    <div id="smRows" class="sm-rows"></div>
+    <button type="button" class="btn btn-ghost btn-sm" data-action="sm-add-row">+ Ingredient</button>
+    <div class="note" id="smTotals" style="margin-top:12px"></div>
+    <div class="form-msg" id="smMsg" aria-live="polite"></div>
+    <div class="modal-actions"><button class="btn" type="button" data-action="dialog-close">Cancel</button><button class="btn btn-primary" type="submit">SAVE MEAL</button></div>
   </form>
 </dialog>
 
