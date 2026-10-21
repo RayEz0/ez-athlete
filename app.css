@@ -281,8 +281,6 @@ main{width:100%;max-width:1280px;margin:0 auto;padding:14px 32px 90px;min-width:
   radial-gradient(360px 220px at 0% 120%,var(--a-soft),transparent 70%),var(--card)}
 .hero::after{content:"";position:absolute;right:-60px;bottom:-60px;width:220px;height:220px;border-radius:50%;background:var(--grad);opacity:.08;filter:blur(2px)}
 .hero-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
-.hero-title{font-size:clamp(34px,5vw,56px);line-height:.98;margin:14px 0 10px;font-weight:900;letter-spacing:-.045em}
-.hero-title span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero-day{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 0 2px}
 .hero-day b{font-size:13px;letter-spacing:.18em;color:var(--muted)}
 .hero-day strong{font-size:clamp(44px,6vw,64px);font-weight:900;letter-spacing:-.05em;line-height:1;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -413,6 +411,48 @@ details.prog.locked .ex input{opacity:.5}
 .seg input:checked+label{border-color:transparent;background:var(--grad);color:var(--on-accent);box-shadow:0 10px 20px -12px var(--a-glow)}
 .seg input:focus-visible+label{outline:3px solid var(--a-glow);outline-offset:2px}
 
+/* ---------- dashboard: compact hero ---------- */
+.hero-row{display:flex;align-items:center;gap:20px 28px;flex-wrap:wrap;margin-top:10px}
+.hero-row .hero-day{margin:0;flex:0 0 auto}
+.hero-row .hero-stats{flex:1 1 420px;margin-top:0}
+.hero-sub{margin:10px 0 0}
+
+/* ---------- calorie ring + macro bars (dashboard card + nutrition header) ---------- */
+.kring{--ring:168px;position:relative;width:var(--ring);height:var(--ring);flex:0 0 auto}
+.kring svg{width:100%;height:100%;display:block}
+.kr-track{fill:none;stroke:var(--line2);stroke-width:11}
+.kr-fill{fill:none;stroke-width:11;stroke-linecap:round;transition:stroke-dasharray .4s ease}
+.kg-a{stop-color:var(--a1)}.kg-b{stop-color:var(--a2)}
+.kring.over .kr-fill{stroke:var(--warn)}
+.kr-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.1}
+.kr-c b{font-size:32px;font-weight:900;letter-spacing:-.03em;color:var(--ink)}
+.kr-c span{font-size:12.5px;font-weight:700;color:var(--muted);margin-top:3px}
+.kr-c em{font-style:normal;font-size:12px;font-weight:850;color:var(--a-ink);background:var(--a-soft);padding:2px 8px;border-radius:999px;margin-top:6px}
+.kring.over .kr-c em{color:var(--warn);background:var(--warn-soft)}
+.nut-card{display:block;color:inherit;text-decoration:none;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.nut-card:hover{border-color:var(--a-soft2);box-shadow:0 14px 34px -16px var(--a-glow)}
+.nut-card:focus-visible{outline:3px solid var(--a-glow);outline-offset:2px}
+.nut-card-ring{display:flex;flex-direction:column;align-items:center;gap:6px;margin:2px 0 12px}
+.nut-card-left{font-size:12.5px;font-weight:700;color:var(--muted)}
+.nut-card-left.over{color:var(--warn)}
+.nbar-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.nbar-top b{letter-spacing:0;text-transform:none;font-size:13.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.nbar .bar{margin-top:6px}
+.nut-card-go{margin-top:14px;font-size:13px;font-weight:800;color:var(--a-ink);text-align:right}
+.nut-sum{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px 24px;align-items:center}
+.nut-sum-ring{display:flex;flex-direction:column;align-items:center;gap:6px}
+.nut-sum-ring .kring{--ring:184px}
+.mbreak{display:grid;gap:6px}
+.mb-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;width:100%;padding:9px 10px;border-radius:12px;border:1px solid var(--line2);background:var(--surface-2);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.mb-row:hover{border-color:var(--a-soft2)}
+.mb-row .mb-name{font-weight:750;font-size:13.5px}
+.mb-row .mb-val{font-size:12.5px;font-weight:750;color:var(--ink2);font-variant-numeric:tabular-nums}
+.mb-row .bar{grid-column:1/-1;height:6px}
+.mb-row.is-empty .mb-name,.mb-row.is-empty .mb-val{color:var(--muted)}
+.meal{scroll-margin-top:80px}
+.meal.flash{animation:mealflash 1.2s ease}
+@keyframes mealflash{0%,40%{box-shadow:0 0 0 3px var(--a2)}100%{box-shadow:var(--shadow)}}
+
 /* ---------- nutrition (food log) ---------- */
 .nut-datebar{display:flex;align-items:center;gap:8px;padding:12px}
 .nut-datebar .input{flex:1;min-width:0;text-align:center;font-weight:750}
@@ -422,7 +462,7 @@ details.prog.locked .ex input{opacity:.5}
 .macro-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .macro .lbl{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
 .macro .val{font-weight:800;font-variant-numeric:tabular-nums}
-.macro .val b{margin-left:8px;font-size:12px;color:var(--a-ink)}
+.macro .val b{font-size:12px;color:var(--a-ink)}
 .macro .bar{margin-top:5px}
 .macro-sub{font-size:12px;color:var(--muted);margin-top:4px}
 .macro.over .macro-sub{color:var(--warn);font-weight:700}
@@ -537,17 +577,10 @@ details.prog.locked .ex input{opacity:.5}
 
 @media (max-width:1180px){
   .span-4{grid-column:span 6}
-  #checkinCard{grid-column:span 7}
-  .quote-card.span-4{grid-column:span 5}
   .focus-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-/* mid-size desktop: the quote becomes a full-width strip straight under hero + This Week so it stays above the fold */
 @media (min-width:960px) and (max-width:1180px){
-  .dash-grid>.hero,.dash-grid>#weekCard{order:-2}
-  .dash-grid>#quoteCard{order:-1;grid-column:span 12}
-  .dash-grid>#checkinCard{grid-column:span 12}
   .quote-card blockquote{font-size:17px}
-  .hero-title{font-size:40px;margin:12px 0 8px}
   .hero-stats span{display:block;line-height:1.25}
 }
 @media (max-width:959px){
@@ -560,11 +593,6 @@ details.prog.locked .ex input{opacity:.5}
   .topbar .menu-btn{display:grid;visibility:hidden}
   .drawer-toggle{display:grid}
   .drawer-toggle.is-open{transform:translateX(var(--drawer-w))}
-  /* dashboard: quote directly under the hero so it is visible on the landing screen */
-  .dash-grid>#quoteCard,.dash-grid>#checkinCard{grid-column:span 12}
-  .dash-grid>.hero{order:-3}
-  .dash-grid>#quoteCard{order:-2}
-  .dash-grid>#weekCard{order:-1}
   .topbar{position:sticky;top:0;z-index:50;margin:0 -16px 12px;padding:calc(8px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 8px calc(16px + env(safe-area-inset-left));background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)}
   .topbar-title{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   main{padding:0 16px calc(40px + env(safe-area-inset-bottom));padding-left:calc(16px + env(safe-area-inset-left));padding-right:calc(16px + env(safe-area-inset-right))}
@@ -580,13 +608,29 @@ details.prog.locked .ex input{opacity:.5}
   .fi-actions .input-sm{flex:1;max-width:none}
   .quick-chip{flex:1 1 calc(50% - 8px)}
   .card{padding:17px;border-radius:18px;margin-bottom:14px}
-  .checkin-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-  .checkin-form .btn{grid-column:1/-1}
-  .kpis-3{gap:8px}
-  .kpis-3 .kpi{padding:10px}
-  .kpis-3 .kpi .v{font-size:18px}
+  /* compact hero + check-in on phones so the nutrition ring is on the first screen */
+  .hero{padding:14px 16px}
+  .hero-sub,.hero-top .chip{display:none} /* the date is already shown next to the DAY counter */
+  .hero-row{gap:10px;margin-top:6px}
+  .hero-row .hero-stats{flex-basis:100%}
+  .hero-day strong{font-size:40px}
+  #checkinCard{padding:14px}
+  #checkinCard .card-h{margin-bottom:10px}
+  #checkinDate{display:none} /* date is in the hero right above */
+  #checkinCard .card-h h2{font-size:17px}
+  .checkin-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;margin-top:10px}
+  .checkin-form .field label{font-size:11px}
+  .checkin-form .input{min-height:42px;padding:9px 10px}
+  .checkin-form .btn{min-height:42px;padding:9px 12px}
+  #checkinMsg{margin-top:4px;min-height:0}
+  .kpis-3{gap:6px}
+  .kpis-3 .kpi{padding:8px 9px}
+  .kpis-3 .kpi .k{font-size:9.5px}
+  .kpis-3 .kpi .v{font-size:17px}
+  .kpis-3 .kpi-sub{font-size:10.5px}
+  .nut-sum{grid-template-columns:minmax(0,1fr)}
+  .nut-sum-ring .kring{--ring:170px}
   .dash-grid{gap:14px}
-  .hero-title{margin:10px 0 6px}
   .hero-stats{gap:6px;margin-top:14px}
   .hero-stats div{padding:9px 7px;border-radius:12px}
   .hero-stats b{font-size:15px}
@@ -614,8 +658,9 @@ details.prog.locked .ex input{opacity:.5}
   .drawer-toggle{left:calc(12px + env(safe-area-inset-left))}
   .kpis .kpi .v{font-size:19px}
   .hero-stats div{padding:8px 5px}
-  .hero-title{font-size:30px}
-  .hero-day strong{font-size:46px}
+  .hero-day strong{font-size:38px}
+  .kring{--ring:152px}
+  .kr-c b{font-size:28px}
   .hero-day{margin:2px 0 0}
   .quote-card blockquote{margin-top:6px}
   .quote-card blockquote::before{font-size:40px;height:15px}

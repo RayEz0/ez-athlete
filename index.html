@@ -53,9 +53,9 @@
     <div class="nav-group">Overview</div>
     <button data-page="dashboard" class="active"><svg class="i"><use href="#i-home"/></svg><span>Dashboard</span></button>
     <div class="nav-group">Train</div>
+    <button data-page="core"><svg class="i"><use href="#i-core"/></svg><span>Core</span></button>
     <button data-page="sessions"><svg class="i"><use href="#i-gym"/></svg><span>GYM</span></button>
     <button data-page="plyo"><svg class="i"><use href="#i-bolt"/></svg><span>Plyometrics</span></button>
-    <button data-page="core"><svg class="i"><use href="#i-core"/></svg><span>Core</span></button>
     <button data-page="basketball"><svg class="i"><use href="#i-ball"/></svg><span>Basketball</span></button>
     <button data-page="running"><svg class="i"><use href="#i-run"/></svg><span>Running</span></button>
     <div class="nav-group">Fuel &amp; recover</div>
@@ -95,19 +95,20 @@
 <!-- ============ DASHBOARD ============ -->
 <section class="page active" id="dashboard" aria-label="Dashboard">
   <div class="dash-grid">
-    <div class="card hero span-7">
+    <div class="card hero span-12">
       <div class="hero-top"><div class="eyebrow">EZ LIFE STYLE TRACKER</div><span class="chip" id="heroDate">—</span></div>
-      <h1 class="hero-title">Lean. Stronger.<br><span>Faster. Athletic.</span></h1>
-      <div class="hero-day"><b>DAY</b><strong id="heroDayNum">1</strong><span id="heroDaySub"></span></div>
-      <p>full-body athletic training · basketball performance · disciplined fat loss</p>
-      <div class="hero-stats">
-        <div><b>76 kg</b><span>Target</span></div><div><b id="heroProtein">160 g</b><span>Protein / day</span></div>
-        <div><b>10k</b><span>Steps / day</span></div><div><b>4 + 1</b><span>Gym sessions / week</span></div>
+      <div class="hero-row">
+        <div class="hero-day"><b>DAY</b><strong id="heroDayNum">1</strong><span id="heroDaySub"></span></div>
+        <div class="hero-stats">
+          <div><b>76 kg</b><span>Target</span></div><div><b id="heroProtein">160 g</b><span>Protein / day</span></div>
+          <div><b>10k</b><span>Steps / day</span></div><div><b>4 + 1</b><span>Gym sessions / week</span></div>
+        </div>
       </div>
+      <p class="hero-sub">full-body athletic training · basketball performance · disciplined fat loss</p>
     </div>
-    <div class="card span-5" id="weekCard"></div>
 
-    <div class="card span-8" id="checkinCard">
+
+    <div class="card span-6" id="checkinCard">
       <div class="card-h"><h2>Daily check-in</h2><span class="chip grey" id="checkinDate">—</span></div>
       <div class="kpis kpis-3">
         <div class="kpi accent"><div class="k">Weight</div><div class="v" id="ciWeight">—</div><div class="kpi-sub" id="ciWeightSub"></div></div>
@@ -121,7 +122,11 @@
       </form>
       <div class="form-msg" id="checkinMsg" aria-live="polite"></div>
     </div>
-    <div class="card quote-card span-4" id="quoteCard"><div class="eyebrow">Daily quote</div><blockquote id="dailyQuote"></blockquote><cite id="quoteAuthor"></cite></div>
+
+    <a class="card span-6 nut-card" id="nutritionCard" href="#/nutrition" data-action="open-nutrition" aria-label="Open today’s nutrition"></a>
+
+    <div class="card span-7" id="weekCard"></div>
+    <div class="card quote-card span-5" id="quoteCard"><div class="eyebrow">Daily quote</div><blockquote id="dailyQuote"></blockquote><cite id="quoteAuthor"></cite></div>
 
     <div class="card span-6" id="weightCard">
       <div class="card-h"><h2><svg class="i"><use href="#i-scale"/></svg>Weight</h2><span class="chip" id="wTrendChip">—</span></div>
@@ -158,8 +163,7 @@
       <ul class="checklist" id="checklist"></ul>
     </div>
 
-    <div class="card span-6" id="nutritionCard"></div>
-    <div class="card span-6" id="recoveryCard"></div>
+    <div class="card span-12" id="recoveryCard"></div>
 
     <div class="card span-12" id="focusCard"></div>
   </div>
@@ -253,7 +257,8 @@
   </div>
   <div class="dash-grid">
     <div class="card span-7" id="nutTotals"></div>
-    <div class="card span-5" id="nutWeek"></div>
+    <div class="card span-5" id="nutBreak"></div>
+    <div class="card span-12" id="nutWeek"></div>
   </div>
   <div class="card nut-quick" id="nutQuick"></div>
   <div class="nut-meals" id="nutMeals"></div>

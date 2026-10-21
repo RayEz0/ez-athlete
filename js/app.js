@@ -1,7 +1,7 @@
 // EZ LIFE STYLE TRACKER — app logic (vanilla JS module).
 import { GYM, EMERGENCY, PLYO, CORE, BASKETBALL, RECOVERY_ROUTINES, CHECKLIST, QUOTES } from './program.js';
 import { blankState, normalizeState, mergeStates, migrateV4, stableString, SCHEMA_VERSION } from './merge.js';
-import { MEALS, MEAL_NAMES, UNITS, MACROS, MACRO_KEYS, targetFor, sumMacros, scaleMacros, macroProgress, defaultMealForTime, round1 } from './nutrition.js';
+import { MEALS, MEAL_NAMES, UNITS, MACROS, targetFor, sumMacros, scaleMacros, macroProgress, defaultMealForTime, round1 } from './nutrition.js';
 
 // ---------- constants ----------
 const KEY = 'ez_tracker_v5';            // current state (schema v5)
@@ -683,10 +683,10 @@ function renderScorecard() {
   }
   $('#weekCard').innerHTML = `<div class="card-h"><h2>This week</h2><span class="chip grey">${esc(fmtDM(ws))} – ${esc(fmtDM(we))}</span></div>
   <div class="score">
-    ${scoreRow('Gym', `${gym} / ${GYM_WEEK_TARGET}`, gym / GYM_WEEK_TARGET * 100)}
-    ${scoreRow('Basketball', c(['basketball', 'match']))}
-    ${scoreRow('Plyometrics', c(['plyo']))}
     ${scoreRow('Core', c(['core']))}
+    ${scoreRow('Gym', `${gym} / ${GYM_WEEK_TARGET}`, gym / GYM_WEEK_TARGET * 100)}
+    ${scoreRow('Plyometrics', c(['plyo']))}
+    ${scoreRow('Basketball', c(['basketball', 'match']))}
     ${scoreRow('Running', `${runs.length}${km ? ` · ${fmtNum(km, 1)} km` : ''}`)}
     <div class="score-sep"></div>
     ${scoreRow('Protein target', `${proteinDays} / 7`, proteinDays / 7 * 100)}
@@ -711,10 +711,10 @@ function renderMission() {
   };
   $('#missionCard').innerHTML = `<div class="card-h"><div><div class="eyebrow">Today’s mission</div><h2>Win the day in three parts</h2></div><span class="chip">TRAIN · FUEL · RECOVER</span></div>
   <div class="mission">
-    ${row('gym', ['gym'], 'i-gym', 'sessions', 'Gym')}
-    ${row('basketball', ['basketball', 'match'], 'i-ball', 'basketball', 'Basketball')}
-    ${row('plyo', ['plyo'], 'i-bolt', 'plyo', 'Plyo')}
     ${row('core', ['core'], 'i-core', 'core', 'Core')}
+    ${row('gym', ['gym'], 'i-gym', 'sessions', 'Gym')}
+    ${row('plyo', ['plyo'], 'i-bolt', 'plyo', 'Plyo')}
+    ${row('basketball', ['basketball', 'match'], 'i-ball', 'basketball', 'Basketball')}
   </div>
   <div class="tri"><div><b>TRAIN</b><p>Complete the next sequential gym session, basketball/run work and today’s plyo dose.</p></div><div><b>FUEL</b><p>Hit your protein target, stay inside the calorie plan and keep hydration high.</p></div><div><b>RECOVER</b><p>Protect sleep, do your morning core and finish with mobility or meditation when needed.</p></div></div>
   <p class="small" style="margin-top:12px"><b>Morning routine:</b> Wake → freshen up → 5–8 min easy mobility/stretching → today’s Core routine → water → breakfast. Keep the core work crisp; it is a daily activation habit, not a max-effort ab session.</p>`;
@@ -762,11 +762,15 @@ function renderSleepCard() {
   drawSleepChart();
 }
 
+// Dashboard nutrition card: calorie ring + protein bar only; the whole card opens today's food log.
 function renderNutritionCard() {
   const t = today(), tot = dayTotals(t), tg = targetsOn(t), has = foodOn(t).length;
-  $('#nutritionCard').innerHTML = `<div class="card-h"><h2><svg class="i"><use href="#i-food"/></svg>Nutrition</h2><span class="chip ${has ? 'ok' : 'grey'}">${has ? `${has} item${has === 1 ? '' : 's'} logged` : 'Not logged'}</span></div>
-  <div class="macros">${macroRow('kcal', tot, tg)}${macroRow('protein', tot, tg)}</div>
-  <button type="button" class="btn btn-ghost btn-block" style="margin-top:14px" data-action="goto" data-page="nutrition">${has ? 'Open food log' : 'Log today’s food'}</button>`;
+  const pr = macroProgress(tot.kcal, tg.kcal, 'kcal');
+  $('#nutritionCard').setAttribute('aria-label', `Nutrition today: ${fmtNum(tot.kcal)} of ${fmtNum(tg.kcal)} kcal, ${fmtNum(tot.protein)} of ${fmtNum(tg.protein)} g protein. Open food log.`);
+  $('#nutritionCard').innerHTML = `<div class="card-h"><h2><svg class="i"><use href="#i-food"/></svg>Nutrition</h2><span class="chip ${has ? 'ok' : 'grey'}">${has ? `${has} item${has === 1 ? '' : 's'}` : 'Not logged'}</span></div>
+  <div class="nut-card-ring">${kcalRing(tot.kcal, tg.kcal, 'dash')}<div class="nut-card-left${pr.over ? ' over' : ''}">${esc(pr.text)}</div></div>
+  ${nutBar('protein', tot, tg)}
+  <div class="nut-card-go">${has ? 'Open food log' : 'Log today’s food'} <span aria-hidden="true">›</span></div>`;
 }
 
 function renderRecoveryCard() {
@@ -939,7 +943,21 @@ function macroLine(d) {
 function macroRow(k, tot, tg) {
   const [, label, unit] = MACROS.find(m => m[0] === k);
   const pr = macroProgress(tot[k], tg[k], unit);
-  return `<div class="macro${pr.over ? ' over' : ''}" data-macro="${k}"><div class="macro-top"><span class="lbl">${label}</span><span class="val">${fmtMacro(k, tot[k])} / ${fmtNum(tg[k])} ${unit}<b>${pr.pct}%</b></span></div><div class="bar"><i style="width:${pr.bar}%"></i></div><div class="macro-sub">${esc(pr.text)}</div></div>`;
+  return `<div class="macro${pr.over ? ' over' : ''}" data-macro="${k}"><div class="macro-top"><span class="lbl">${label}</span><span class="val">${fmtMacro(k, tot[k])} / ${fmtNum(tg[k])} ${unit} · <b>${pr.pct}%</b></span></div><div class="bar"><i style="width:${pr.bar}%"></i></div><div class="macro-sub">${esc(pr.text)}</div></div>`;
+}
+// Calorie ring (SVG): fills with the theme accent, switches to the warning colour when over target.
+function kcalRing(eaten, target, id) {
+  const pr = macroProgress(eaten, target, 'kcal'), r = 52, C = 2 * Math.PI * r;
+  const len = Math.min(1, target > 0 ? eaten / target : 0) * C;
+  return `<div class="kring${pr.over ? ' over' : ''}" data-ring="${id}" role="img" aria-label="${fmtNum(eaten)} of ${fmtNum(target)} kcal eaten, ${pr.pct}%${pr.over ? ', over target' : ''}">
+    <svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="kg-${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="kg-a"/><stop offset="1" class="kg-b"/></linearGradient></defs>
+      <circle class="kr-track" cx="60" cy="60" r="${r}"/><circle class="kr-fill" cx="60" cy="60" r="${r}" stroke="url(#kg-${id})" stroke-dasharray="${len.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"${len > 0 ? '' : ' visibility="hidden"'}/></svg>
+    <div class="kr-c"><b>${fmtNum(eaten)}</b><span>/ ${fmtNum(target)} kcal</span><em>${pr.pct}%</em></div></div>`;
+}
+// One horizontal macro bar: "112 / 160 g · 70%".
+function nutBar(k, tot, tg) {
+  const [, label, unit] = MACROS.find(m => m[0] === k), pr = macroProgress(tot[k], tg[k], unit);
+  return `<div class="nbar" data-macro="${k}"><div class="nbar-top"><span>${label}</span><b>${fmtMacro(k, tot[k])} / ${fmtNum(tg[k])} ${unit} · ${pr.pct}%</b></div><div class="bar"><i style="width:${pr.bar}%"></i></div></div>`;
 }
 
 let nutDay = null;      // selected day on the Nutrition page; null = follow today
@@ -971,9 +989,14 @@ function renderNutrition() {
   inp.max = t; inp.value = d;
   $('.nut-next').disabled = d >= t;
   $('#nutTodayBtn').disabled = d === t;
+  const kp = macroProgress(tot.kcal, tg.kcal, 'kcal');
   $('#nutTotals').innerHTML = `<div class="card-h"><div><div class="eyebrow">${d === t ? 'Today' : esc(weekdayLong(d))}</div><h2>${esc(fmtDMY(d))}</h2></div><span class="chip ${items.length ? 'ok' : 'grey'}">${items.length ? `${items.length} item${items.length === 1 ? '' : 's'}` : 'Nothing logged'}</span></div>
-  <div class="macros">${MACRO_KEYS.map(k => macroRow(k, tot, tg)).join('')}</div>
+  <div class="nut-sum">
+    <div class="nut-sum-ring">${kcalRing(tot.kcal, tg.kcal, 'page')}<div class="nut-card-left${kp.over ? ' over' : ''}">${esc(kp.text)}</div></div>
+    <div class="macros">${['protein', 'carbs', 'fat', 'fibre'].map(k => macroRow(k, tot, tg)).join('')}</div>
+  </div>
   <p class="small" style="margin-top:12px">Targets ${tg.effective ? `effective from ${esc(fmtDMY(tg.effective))}` : '(defaults)'} · change them under <b>Targets</b> below.</p>`;
+  renderMealBreakdown(items, tot);
   renderNutWeek(d);
   renderQuickAdd(d);
   renderMeals(d, items);
@@ -981,6 +1004,16 @@ function renderNutrition() {
   renderTargetsPanel();
 }
 
+// Per-meal breakdown: kcal and % share of the day; tap a row to jump to that meal's section.
+function renderMealBreakdown(items, tot) {
+  $('#nutBreak').innerHTML = `<div class="card-h"><h2>Meals</h2><span class="chip grey">share of ${fmtNum(tot.kcal)} kcal</span></div>
+  <div class="mbreak">${MEALS.map(([k, l]) => {
+    const kc = sumMacros(items.filter(a => mealOf(a) === k).map(a => a.details || {})).kcal;
+    const share = tot.kcal > 0 ? Math.round(kc / tot.kcal * 100) : 0;
+    return `<button type="button" class="mb-row${kc ? '' : ' is-empty'}" data-action="nut-jump" data-meal="${k}" aria-label="${esc(l)}: ${fmtNum(kc)} kcal, ${share}% of the day. Jump to ${esc(l)}">
+      <span class="mb-name">${esc(l)}</span><span class="mb-val">${fmtNum(kc)} kcal · ${share}%</span><span class="bar"><i style="width:${share}%"></i></span></button>`;
+  }).join('')}</div>`;
+}
 function renderNutWeek(d) {
   const days = weekDays(d).filter(x => x <= today());
   const logged = days.filter(x => foodOn(x).length);
@@ -1150,7 +1183,8 @@ function renderRecovery() {
 let logLimit = 21;
 const openDays = new Set();
 const LOG_SECTIONS = [
-  ['DAILY CHECK-IN', ['weight', 'sleep']], ['GYM', ['gym']], ['PLYOMETRICS', ['plyo']], ['CORE', ['core']], ['BASKETBALL', ['basketball', 'match']], ['RUNNING', ['running']],
+  // training order everywhere: Core → Gym → Plyometrics → Basketball → Running
+  ['DAILY CHECK-IN', ['weight', 'sleep']], ['CORE', ['core']], ['GYM', ['gym']], ['PLYOMETRICS', ['plyo']], ['BASKETBALL', ['basketball', 'match']], ['RUNNING', ['running']],
   ['NUTRITION', ['food']], ['RECOVERY', ['recovery', 'meditation']], ['REST', ['rest']],
 ];
 const logRec = (a, note = '') => `<div class="log-rec"><div class="m"><b>${esc(recordTitle(a))}${note ? ` <span class="small">${note}</span>` : ''}</b>${recordBody(a)}</div><button type="button" class="btn btn-sm btn-danger" data-action="delete" data-id="${esc(a.id)}" aria-label="Delete ${esc(recordTitle(a))}">Delete</button></div>`;
@@ -1451,6 +1485,11 @@ document.addEventListener('click', e => {
   else if (act === 'jump-today') { openDays.add(today()); logLimit = Math.max(logLimit, 21); renderLogs(); $(`details.day[data-date="${today()}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   else if (act === 'log-more') { logLimit += 30; renderLogs(); }
   // nutrition
+  else if (act === 'open-nutrition') { e.preventDefault(); nutDay = null; showPage('nutrition'); }
+  else if (act === 'nut-jump') {
+    const sec = $(`#nutMeals .meal[data-meal="${el.dataset.meal}"]`);
+    if (sec) { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); sec.classList.remove('flash'); void sec.offsetWidth; sec.classList.add('flash'); }
+  }
   else if (act === 'nut-step') { const d = addDays(nutDate(), Number(el.dataset.step)); nutDay = d < today() ? d : null; renderNutrition(); }
   else if (act === 'nut-today') { nutDay = null; renderNutrition(); }
   else if (act === 'food-add') openFoodDialog({ meal: el.dataset.meal });
