@@ -481,6 +481,9 @@ details.prog.locked .ex input{opacity:.5}
 /* ---------- toast ---------- */
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:1200;display:flex;align-items:center;gap:14px;max-width:calc(100vw - 32px);padding:10px 10px 10px 16px;border-radius:16px;background:#0f172a;color:#fff;border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 40px -12px rgba(15,23,42,.45);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
 .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.toast.dragging{transition:none;cursor:grabbing}
+.toast button{cursor:pointer}
 .toast span{font-weight:700;font-size:14px;min-width:0}
 .toast button{flex:0 0 auto;min-height:40px;padding:8px 14px;border-radius:11px;border:0;background:rgba(255,255,255,.14);color:#fff;font-weight:900;letter-spacing:.08em;cursor:pointer}
 .toast button:hover{background:rgba(255,255,255,.24)}
@@ -588,6 +591,10 @@ select.input{-webkit-appearance:none;appearance:none;background-image:linear-gra
 @keyframes barfill{from{transform:scaleX(0)}}
 .nut-card:active,.mb-row:active,.quick-chip:active,.mission-item:active,details.prog>summary:active,.day>summary:active,#nav button:active{transform:scale(.98)}
 .mb-row,.quick-chip,.mission-item,details.prog>summary,.day>summary,#nav button{transition:transform .12s var(--ease),background .15s}
+
+/* Nutrition: big Log food button at the top of the page */
+.nut-logbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:56px;margin:0 0 16px;border-radius:16px;font-size:18px;font-weight:800;letter-spacing:.01em}
+.nut-logbtn span{font-size:24px;line-height:1;font-weight:700}
 
 /* ---------- responsive ---------- */
 /* ---------- mobile drawer toggle (moves with the drawer) ---------- */

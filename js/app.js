@@ -292,17 +292,53 @@ function recordTitle(a) {
 }
 
 // ---------- toast + undo ----------
-let toastTimer = null, toastUndo = null;
+let toastTimer = null, toastUndo = null, toastSwipe = null, toastGen = 0;
+const TOAST_MS = 3000; // every toast (incl. UNDO) auto-dismisses after 3 s; swipe sideways or down to dismiss sooner
 function toast(msg, undoFn) {
   const el = $('#toast');
   $('#toastMsg').textContent = msg;
   toastUndo = undoFn || null;
   $('#toastUndo').hidden = !undoFn;
+  toastGen++; toastSwipe = null;
+  el.classList.remove('dragging'); el.style.transform = el.style.opacity = '';
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(hideToast, undoFn ? 9000 : 3500);
+  toastTimer = setTimeout(hideToast, TOAST_MS);
 }
-function hideToast() { $('#toast').classList.remove('show'); toastUndo = null; }
+function hideToast() { clearTimeout(toastTimer); const el = $('#toast'); el.classList.remove('show', 'dragging'); el.style.transform = el.style.opacity = ''; toastUndo = null; toastSwipe = null; }
+{
+  const el = $('#toast');
+  el.addEventListener('pointerdown', e => {
+    if (!el.classList.contains('show') || e.target.closest('#toastUndo')) return;
+    toastSwipe = { x: e.clientX, y: e.clientY, dx: 0, dy: 0 };
+    clearTimeout(toastTimer); // hold while the finger is down
+    el.setPointerCapture?.(e.pointerId);
+    el.classList.add('dragging');
+  });
+  el.addEventListener('pointermove', e => {
+    if (!toastSwipe) return;
+    const dx = e.clientX - toastSwipe.x, dy = Math.max(0, e.clientY - toastSwipe.y);
+    Object.assign(toastSwipe, { dx, dy });
+    el.style.transform = `translate(calc(-50% + ${dx}px), ${dy}px)`;
+    el.style.opacity = String(Math.max(0.2, 1 - Math.max(Math.abs(dx) / 220, dy / 120)));
+  });
+  const end = () => {
+    if (!toastSwipe) return;
+    const { dx, dy } = toastSwipe; toastSwipe = null;
+    el.classList.remove('dragging');
+    if (Math.abs(dx) > 60 || dy > 40) {
+      const gen = toastGen;
+      el.style.transform = Math.abs(dx) > 60 ? `translate(calc(-50% + ${dx > 0 ? 120 : -120}vw), 0)` : 'translate(-50%, 140%)';
+      el.style.opacity = '0';
+      setTimeout(() => { if (gen === toastGen) hideToast(); }, 200);
+    } else {
+      el.style.transform = el.style.opacity = '';
+      toastTimer = setTimeout(hideToast, TOAST_MS);
+    }
+  };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+}
 $('#toastUndo').addEventListener('click', () => { const f = toastUndo; hideToast(); if (f) f(); });
 
 function logged(recs, msg) {
@@ -1504,7 +1540,7 @@ document.addEventListener('click', e => {
   }
   else if (act === 'nut-step') { const d = addDays(nutDate(), Number(el.dataset.step)); nutDay = d < today() ? d : null; renderNutrition(); }
   else if (act === 'nut-today') { nutDay = null; renderNutrition(); }
-  else if (act === 'food-add') openFoodDialog({ meal: el.dataset.meal });
+  else if (act === 'food-add') openFoodDialog({ meal: el.dataset.meal || defaultMealForTime() });
   else if (act === 'food-edit') openFoodDialog({ id: el.dataset.id });
   else if (act === 'saved-add') openSavedAdd({ meal: el.dataset.meal, savedId: el.dataset.saved });
   else if (act === 'quick-add') { if (!busy(el)) logSavedMeal(el.dataset.id, quickMeal || defaultMealForTime(), 1); }
