@@ -35,6 +35,8 @@
   <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
@@ -251,7 +253,7 @@
 <!-- ============ NUTRITION ============ -->
 <section class="page" id="nutrition" aria-label="Nutrition">
   <div class="page-head"><div><div class="eyebrow">Food log</div><h1>Nutrition</h1><p class="lead">Log what you eat, meal by meal. Totals, targets and progress update as you go.</p></div></div>
-  <button type="button" class="btn btn-primary btn-block nut-logbtn" id="nutLogBtn" data-action="food-add"><span aria-hidden="true">+</span> Log food</button>
+  <button type="button" class="btn btn-primary btn-block nut-logbtn" id="nutLogBtn" data-action="food-add"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Log food</button>
   <div class="card nut-datebar">
     <button type="button" class="icon-btn" data-action="nut-step" data-step="-1" aria-label="Previous day"><svg class="i"><use href="#i-left"/></svg></button>
     <label class="sr-only" for="nutDay">Day</label>
@@ -271,7 +273,7 @@
     <div class="nut-panel-body">
       <p class="small">Build a meal once (each ingredient with its own values) and add it to any day with a servings multiplier. Logged entries keep their own copy of the values, so editing a saved meal never changes past logs.</p>
       <div class="hist" id="savedList"></div>
-      <button type="button" class="btn btn-ghost btn-block" data-action="saved-new" style="margin-top:12px">+ New saved meal</button>
+      <button type="button" class="btn btn-ghost btn-block" data-action="saved-new" style="margin-top:12px"><svg class="i i-sm" aria-hidden="true"><use href="#i-plus"/></svg>New saved meal</button>
     </div>
   </details>
   <details class="card nut-panel" id="targetsPanel">
@@ -325,6 +327,13 @@
 </div>
 
 <button type="button" class="drawer-toggle" id="drawerToggle" data-action="toggle-drawer" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false"><span></span><span></span><span></span></button>
+<!-- iOS-style tab bar (phones < 768 px); every other page stays in the ☰ menu -->
+<nav class="tabbar" id="tabbar" aria-label="Main tabs">
+  <button type="button" data-tab="dashboard"><svg class="i"><use href="#i-home"/></svg><span>Dashboard</span></button>
+  <button type="button" data-tab="sessions"><svg class="i"><use href="#i-gym"/></svg><span>Gym</span></button>
+  <button type="button" data-tab="nutrition"><svg class="i"><use href="#i-food"/></svg><span>Nutrition</span></button>
+  <button type="button" data-tab="tracking"><svg class="i"><use href="#i-log"/></svg><span>Logs</span></button>
+</nav>
 
 <dialog class="modal" id="weightDialog" aria-labelledby="wdTitle">
   <form method="dialog" id="weightDialogForm" novalidate>
@@ -385,14 +394,14 @@
     <div class="field"><label for="smName">Name</label><input class="input" id="smName" maxlength="80" placeholder="e.g. Protein oats" autocomplete="off"></div>
     <h4 class="sm-h">Ingredients</h4>
     <div id="smRows" class="sm-rows"></div>
-    <button type="button" class="btn btn-ghost btn-sm" data-action="sm-add-row">+ Ingredient</button>
+    <button type="button" class="btn btn-ghost btn-sm" data-action="sm-add-row"><svg class="i i-sm" aria-hidden="true"><use href="#i-plus"/></svg>Ingredient</button>
     <div class="note" id="smTotals" style="margin-top:12px"></div>
     <div class="form-msg" id="smMsg" aria-live="polite"></div>
     <div class="modal-actions"><button class="btn" type="button" data-action="dialog-close">Cancel</button><button class="btn btn-primary" type="submit">SAVE MEAL</button></div>
   </form>
 </dialog>
 
-<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastUndo" type="button">UNDO</button></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><svg class="i toast-ic" id="toastIcon" aria-hidden="true" style="display:none"><use href="#i-check"/></svg><span id="toastMsg"></span><button id="toastUndo" type="button">UNDO</button></div>
 <script type="module" src="js/app.js"></script>
 </body>
 </html>

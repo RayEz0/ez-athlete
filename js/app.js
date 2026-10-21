@@ -15,6 +15,7 @@ const EZTheme = window.EZTheme; // from js/theme.js
 const THEMES = Object.fromEntries(EZTheme.THEMES.map(([id, , color]) => [id, color]));
 const THEME_NAMES = Object.fromEntries(EZTheme.THEMES.map(([id, name]) => [id, name]));
 const TRAINING_TYPES = ['gym', 'plyo', 'core', 'basketball', 'match', 'running'];
+const darkMQ = matchMedia('(prefers-color-scheme: dark)'); // auto dark mode follows the phone setting (styles in app.css)
 const PAGE_TITLES = { dashboard: 'Dashboard', sessions: 'GYM', plyo: 'Plyometrics', core: 'Core', basketball: 'Basketball', running: 'Running', nutrition: 'Nutrition', recovery: 'Recovery', tracking: 'Logs' };
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -238,7 +239,7 @@ function updateLocks(kind) {
     const btn = $('[data-action="log-prog"]', det);
     btn.disabled = !!a;
     $('.prog-status', det).innerHTML = a
-      ? `<span class="chip ok" style="margin-top:4px">✓ Done ${dow(a.date)} ${esc(fmtDM(a.date))}</span> <span class="chip grey" style="margin-top:4px"><svg class="i" style="width:13px;height:13px"><use href="#i-lock"/></svg>Available Mon ${esc(fmtDM(nextMon))}</span>`
+      ? `<span class="chip ok" style="margin-top:4px">${ICON('check')}Done ${dow(a.date)} ${esc(fmtDM(a.date))}</span> <span class="chip grey" style="margin-top:4px"><svg class="i" style="width:13px;height:13px"><use href="#i-lock"/></svg>Available Mon ${esc(fmtDM(nextMon))}</span>`
       : '';
     $('.lock-msg', det).textContent = a ? `${K.label(p)} was logged this week (${dow(a.date)}). It unlocks again on Monday ${fmtDM(nextMon)}.` : '';
   }
@@ -265,7 +266,7 @@ function recordBody(a) {
   const items = Array.isArray(d.items) ? d.items : [];
   switch (a.type) {
     case 'gym': case 'plyo': case 'core': case 'basketball':
-      return items.length ? items.map(i => `<div class="ck">✓ ${esc(i.name)}${i.meta ? ` — ${esc(i.meta)}` : ''}</div>`).join('') : (d.text ? `<div>${esc(d.text)}</div>` : '');
+      return items.length ? items.map(i => `<div class="ck">${ICON('check')}${esc(i.name)}${i.meta ? ` — ${esc(i.meta)}` : ''}</div>`).join('') : (d.text ? `<div>${esc(d.text)}</div>` : '');
     case 'match': return `<div>${d.court === 'full' ? 'Full Court' : 'Half Court'} · ${esc(d.minutes)} min played</div>`;
     case 'running': {
       if (!(d.distance > 0 && d.time > 0)) return `<div>${esc(d.text || '')}</div>`;
@@ -273,7 +274,7 @@ function recordBody(a) {
     }
     case 'food': return `<div>${esc(macroLine(d))}</div>`;
     case 'meditation': return `<div>${esc(d.minutes)} min</div>`;
-    case 'recovery': return `<div>Completed</div>${items.length ? items.map(i => `<div class="ck">✓ ${esc(i)}</div>`).join('') : ''}`;
+    case 'recovery': return `<div>Completed</div>${items.length ? items.map(i => `<div class="ck">${ICON('check')}${esc(i)}</div>`).join('') : ''}`;
     case 'rest': return '<div>Planned rest day</div>';
     case 'weight': return `<div>Weight: ${fmtNum(d.kg, 1)} kg</div>`;
     case 'sleep': return `<div>Sleep: ${fmtNum(d.hours, 1)} hrs</div>`;
@@ -296,7 +297,10 @@ let toastTimer = null, toastUndo = null, toastSwipe = null, toastGen = 0;
 const TOAST_MS = 3000; // every toast (incl. UNDO) auto-dismisses after 3 s; swipe sideways or down to dismiss sooner
 function toast(msg, undoFn) {
   const el = $('#toast');
-  $('#toastMsg').textContent = msg;
+  // a leading "✓ " in a message becomes the check icon
+  const done = msg.startsWith('✓ ');
+  $('#toastIcon').style.display = done ? '' : 'none';
+  $('#toastMsg').textContent = done ? msg.slice(2) : msg;
   toastUndo = undoFn || null;
   $('#toastUndo').hidden = !undoFn;
   toastGen++; toastSwipe = null;
@@ -443,8 +447,8 @@ const SWATCH = {
 };
 function buildThemeSelect() {
   $('#themeSelect').innerHTML = `<option value="auto"></option><optgroup label="Themes">${EZTheme.THEMES.map(([id, name]) => `<option value="${id}">${name}</option>`).join('')}</optgroup>`;
-  $('#tpList').innerHTML = `<li role="option" id="tp-auto" class="tp-daily" data-value="auto"><i></i><span class="tp-name">Daily theme</span><span class="tp-tag" id="tpDailyTag"></span><span class="tp-check" aria-hidden="true">✓</span></li><li class="tp-sep" role="presentation"></li>`
-    + EZTheme.THEMES.map(([id, name]) => `<li role="option" id="tp-${id}" data-value="${id}"><i style="background:linear-gradient(135deg,${SWATCH[id][0]},${SWATCH[id][1]})"></i><span class="tp-name">${name}</span><span class="tp-tag"></span><span class="tp-check" aria-hidden="true">✓</span></li>`).join('');
+  $('#tpList').innerHTML = `<li role="option" id="tp-auto" class="tp-daily" data-value="auto"><i></i><span class="tp-name">Daily theme</span><span class="tp-tag" id="tpDailyTag"></span><svg class="i tp-check" aria-hidden="true"><use href="#i-check"/></svg></li><li class="tp-sep" role="presentation"></li>`
+    + EZTheme.THEMES.map(([id, name]) => `<li role="option" id="tp-${id}" data-value="${id}"><i style="background:linear-gradient(135deg,${SWATCH[id][0]},${SWATCH[id][1]})"></i><span class="tp-name">${name}</span><span class="tp-tag"></span><svg class="i tp-check" aria-hidden="true"><use href="#i-check"/></svg></li>`).join('');
 }
 // Visible picker state: the theme in use is highlighted (✓) — in Daily mode that is today's automatic theme.
 function updatePicker(theme, mode) {
@@ -506,10 +510,11 @@ tpList.addEventListener('keydown', e => {
 });
 tpBtn.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); openPicker(true); } });
 document.addEventListener('pointerdown', e => { if (!tpPop.hidden && !e.target.closest('#themePicker')) closePicker(false); });
+darkMQ.addEventListener?.('change', () => { applyTheme(); render(); });
 function applyTheme() {
   const { theme, mode } = EZTheme.resolve(today());
   document.documentElement.setAttribute('data-theme', theme);
-  $('meta[name="theme-color"]').setAttribute('content', THEMES[theme]);
+  $('meta[name="theme-color"]').setAttribute('content', darkMQ.matches ? '#000000' : THEMES[theme]);
   const sel = $('#themeSelect'), daily = EZTheme.dailyTheme(today());
   sel.options[0].textContent = `Daily · ${THEME_NAMES[daily]}`;
   sel.value = mode === 'auto' ? 'auto' : theme;
@@ -553,12 +558,15 @@ function setCollapsed(c) {
 mobileMQ.addEventListener?.('change', () => closeDrawer(false));
 
 // ---------- navigation ----------
+// line icons from the inline SVG sprite in index.html (no emoji / glyph icons)
+const ICON = (n, cls = 'i i-sm') => `<svg class="${cls}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 let currentPage = 'dashboard';
 function showPage(id, { scroll = true } = {}) {
   if (!PAGE_TITLES[id]) id = 'dashboard';
   currentPage = id;
   $$('.page').forEach(p => p.classList.toggle('active', p.id === id));
   $$('#nav button[data-page]').forEach(b => { b.classList.toggle('active', b.dataset.page === id); b.setAttribute('aria-current', b.dataset.page === id ? 'page' : 'false'); });
+  $$('#tabbar [data-tab]').forEach(b => { b.classList.toggle('active', b.dataset.tab === id); if (b.dataset.tab === id) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   $('#topTitle').textContent = PAGE_TITLES[id];
   document.title = id === 'dashboard' ? 'EZ LIFE STYLE TRACKER' : `${PAGE_TITLES[id]} · EZ LIFE STYLE TRACKER`;
   // "#/page" rather than "#page": a hash equal to a section id makes the browser jump to that section on load.
@@ -621,7 +629,7 @@ function renderWeek(page) {
   el.innerHTML = `<div class="card-h"><h2>THIS WEEK</h2><span class="chip grey">${esc(fmtDM(days[0]))} – ${esc(fmtDM(days[6]))} · resets Monday</span></div>
     <div class="week-strip">${cells}</div>
     <div class="week-foot"><span class="small">${count} logged this week · history is permanent</span>
-    ${restToday ? `<button type="button" class="btn btn-sm" data-action="remove-rest" data-id="${esc(restToday.id)}">✓ Rest day logged · Remove</button>`
+    ${restToday ? `<button type="button" class="btn btn-sm" data-action="remove-rest" data-id="${esc(restToday.id)}">${ICON('check')}Rest day logged · Remove</button>`
     : `<button type="button" class="btn btn-sm btn-ghost" data-action="log-rest"><svg class="i"><use href="#i-moon"/></svg>LOG REST DAY (today)</button>`}</div>`;
 }
 
@@ -685,12 +693,12 @@ function renderCheckin() {
   const t = today(), w = dailyValue('weight', t), sl = sleepOn(t), last = weights().pop(), p = dayProtein(t);
   $('#checkinDate').textContent = fmtLong(t);
   $('#ciWeight').innerHTML = w ? `${fmtNum(w.details.kg, 1)}<small>kg</small>` : last ? `${fmtNum(last.details.kg, 1)}<small>kg</small>` : '—';
-  $('#ciWeightSub').textContent = w ? '✓ Logged today' : last ? `Last: ${fmtDM(last.date)} · not logged today` : 'Not logged yet';
+  $('#ciWeightSub').innerHTML = w ? `${ICON('check')}Logged today` : last ? `Last: ${esc(fmtDM(last.date))} · not logged today` : 'Not logged yet';
   $('#ciProtein').innerHTML = `${fmtNum(p)}<small>g</small>`;
   const pt = targetsOn(t).protein;
-  $('#ciProteinSub').textContent = p >= pt ? '✓ Target hit' : `target ${fmtNum(pt)} g`;
+  $('#ciProteinSub').innerHTML = p >= pt ? `${ICON('check')}Target hit` : `target ${fmtNum(pt)} g`;
   $('#ciSleep').innerHTML = sl ? `<span class="${SLEEP_CLS[sleepClass(sl.details.hours)]}">${fmtNum(sl.details.hours, 1)}<small>h</small></span>` : '—';
-  $('#ciSleepSub').textContent = sl ? (sl.details.hours >= SLEEP_TARGET ? '✓ 8 h target met' : 'Below 8 h target') : 'Not logged today · target 8 h';
+  $('#ciSleepSub').innerHTML = sl ? (sl.details.hours >= SLEEP_TARGET ? `${ICON('check')}8 h target met` : 'Below 8 h target') : 'Not logged today · target 8 h';
   $('#ciWeightIn').placeholder = w ? `Today: ${fmtNum(w.details.kg, 1)}` : 'e.g. 84.0';
   $('#ciSleepIn').placeholder = sl ? `Today: ${fmtNum(sl.details.hours, 1)}` : 'e.g. 7.5';
 }
@@ -814,7 +822,7 @@ function renderNutritionCard() {
   $('#nutritionCard').setAttribute('aria-label', `Nutrition today: ${fmtNum(tot.kcal)} of ${fmtNum(tg.kcal)} kcal, ${fmtNum(tot.protein)} of ${fmtNum(tg.protein)} g protein. Open food log.`);
   $('#nutritionCard').innerHTML = `<div class="card-h"><h2><svg class="i"><use href="#i-food"/></svg>Nutrition</h2><span class="chip ${has ? 'ok' : 'grey'}">${has ? `${has} item${has === 1 ? '' : 's'}` : 'Not logged'}</span></div>
   <div class="nut-rings">${activityRings(tot, tg)}${ringLegend(tot, tg)}</div>
-  <div class="nut-card-foot"><span class="nut-card-left${pr.over ? ' over' : ''}">${esc(pr.text)}</span><span class="nut-card-go">${has ? 'Open food log' : 'Log today’s food'} <span aria-hidden="true">›</span></span></div>`;
+  <div class="nut-card-foot"><span class="nut-card-left${pr.over ? ' over' : ''}">${esc(pr.text)}</span><span class="nut-card-go">${has ? 'Open food log' : 'Log today’s food'}${ICON('right')}</span></div>`;
 }
 
 function renderRecoveryCard() {
@@ -823,7 +831,7 @@ function renderRecoveryCard() {
   const weekCount = actsIn(days[0], days[6], ['recovery', 'meditation']).length;
   const sleep = checked(t, 'sleep');
   $('#recoveryCard').innerHTML = `<div class="card-h"><h2><svg class="i"><use href="#i-heart"/></svg>Recovery</h2><span class="chip ${rec.length ? 'ok' : 'grey'}">${rec.length ? `${rec.length} today` : 'None today'}</span></div>
-  <div class="kpis"><div class="kpi"><div class="k">Sleep 8h+</div><div class="v" style="font-size:17px">${sleep ? '✓ Yes' : 'Not ticked'}</div></div><div class="kpi"><div class="k">This week</div><div class="v" style="font-size:17px">${weekCount} session${weekCount === 1 ? '' : 's'}</div></div></div>
+  <div class="kpis"><div class="kpi"><div class="k">Sleep 8h+</div><div class="v" style="font-size:17px">${sleep ? `${ICON('check')}Yes` : 'Not ticked'}</div></div><div class="kpi"><div class="k">This week</div><div class="v" style="font-size:17px">${weekCount} session${weekCount === 1 ? '' : 's'}</div></div></div>
   ${rec.length ? `<div class="today-list" style="margin-top:12px">${rec.map(a => `<span class="act-chip"><i></i>${esc(shortLabel(a))}</span>`).join('')}</div>` : ''}
   <button type="button" class="btn btn-ghost btn-block" style="margin-top:14px" data-action="goto" data-page="recovery">Open recovery</button>`;
 }
@@ -914,7 +922,7 @@ function drawWeightChart() {
   ctx.setLineDash([4, 4]); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(pad.l, Y(TARGET_KG)); ctx.lineTo(w - pad.r, Y(TARGET_KG)); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle = '#94a3b8'; ctx.fillText('76 kg target', pad.l + 2, Y(TARGET_KG) - 4);
-  const a1 = cssVar('--a1') || '#6d3cf5', a2 = cssVar('--a2') || '#a87bff';
+  const a1 = cssVar('--chart-a1') || cssVar('--a1') || '#6d3cf5', a2 = cssVar('--a2') || '#a87bff';
   const grad = ctx.createLinearGradient(0, pad.t, 0, h);
   grad.addColorStop(0, a2 + '55'); grad.addColorStop(1, a2 + '00');
   if (pts.length > 1) {
@@ -935,7 +943,7 @@ function drawRunChart() {
   if (!p) return;
   const { ctx, w, h } = p, arr = runs().filter(x => x.details?.time > 0);
   ctx.font = '12px system-ui, sans-serif';
-  if (!arr.length) { ctx.fillStyle = '#667085'; ctx.fillText('Log a run to see your progression.', 20, 35); return; }
+  if (!arr.length) { ctx.fillStyle = cssVar('--muted') || '#667085'; ctx.fillText('Log a run to see your progression.', 20, 35); return; }
   const pad = { l: 44, r: 18, t: 18, b: 34 }, iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
   const maxT = Math.max(...arr.map(x => x.details.time)) * 1.12;
   ctx.strokeStyle = cssVar('--line') || '#e4e8f0'; ctx.lineWidth = 1; ctx.fillStyle = '#94a3b8';
@@ -945,7 +953,7 @@ function drawRunChart() {
     ctx.fillText(`${Math.round(maxT * (1 - i / 3))}m`, 6, y + 4);
   }
   ctx.fillStyle = cssVar('--muted') || '#667085'; ctx.fillText('time ↑', 6, 12); ctx.fillText('runs →', w - 60, h - 8);
-  const a1 = cssVar('--a1') || '#6d3cf5';
+  const a1 = cssVar('--chart-a1') || cssVar('--a1') || '#6d3cf5';
   const X = i => arr.length === 1 ? pad.l + iw / 2 : pad.l + iw * i / (arr.length - 1);
   const Y = v => pad.t + ih * (1 - v / maxT);
   ctx.strokeStyle = a1; ctx.lineWidth = 2; ctx.beginPath();
@@ -1105,7 +1113,7 @@ function renderMeals(d, items) {
     return `<section class="card meal${list.length ? '' : ' is-empty'}" data-meal="${key}" aria-label="${esc(label)}">
       <div class="meal-h"><h3>${esc(label)}</h3><span class="meal-sub">${list.length ? `${fmtNum(sub.kcal)} kcal · P ${fmtMacro('protein', sub.protein)} g · C ${fmtMacro('carbs', sub.carbs)} · F ${fmtMacro('fat', sub.fat)}` : ''}</span></div>
       ${list.length ? `<ul class="food-list">${list.map(foodRow).join('')}</ul>` : ''}
-      <div class="meal-actions"><button type="button" class="btn btn-sm btn-ghost" data-action="food-add" data-meal="${key}">+ Add food</button><button type="button" class="btn btn-sm" data-action="saved-add" data-meal="${key}"${noSaved ? ' disabled title="Create a saved meal first"' : ''}>+ Saved meal</button></div>
+      <div class="meal-actions"><button type="button" class="btn btn-sm btn-ghost" data-action="food-add" data-meal="${key}">${ICON('plus')}Add food</button><button type="button" class="btn btn-sm" data-action="saved-add" data-meal="${key}"${noSaved ? ' disabled title="Create a saved meal first"' : ''}>${ICON('plus')}Saved meal</button></div>
     </section>`;
   }).join('');
 }
@@ -1193,7 +1201,7 @@ function smRowHtml(it = {}) {
     ${f('qty', 'Qty')}
     <label class="sm-f"><span>Unit</span><select class="input input-sm" data-f="unit">${opts(UNITS.filter(u => u !== 'serving').map(u => [u, u]), it.unit || 'g')}</select></label>
     ${f('kcal', 'kcal')}${f('protein', 'P g')}${f('carbs', 'C g')}${f('fat', 'F g')}${f('fibre', 'Fibre g')}
-    <button type="button" class="btn btn-sm btn-danger sm-del" data-action="sm-del-row" aria-label="Remove ingredient">×</button>
+    <button type="button" class="btn btn-sm btn-danger sm-del" data-action="sm-del-row" aria-label="Remove ingredient">${ICON('x')}</button>
   </div>`;
 }
 function readSmRows() {
@@ -1281,7 +1289,7 @@ function dayBody(d) {
   const other = acts.filter(a => !LOG_SECTIONS.some(([, ts]) => ts.includes(a.type)));
   if (other.length) html += `<div class="log-sec"><h4>OTHER</h4>${other.map(a => `<div class="log-rec"><div class="m"><b>${esc(recordTitle(a))}</b>${recordBody(a)}</div><button type="button" class="btn btn-sm btn-danger" data-action="delete" data-id="${esc(a.id)}">Delete</button></div>`).join('')}</div>`;
   const ticks = CHECKLIST.filter(([k]) => checked(d, k));
-  html += `<div class="log-sec"><h4>CHECKLIST · ${ticks.length} / ${CHECKLIST.length}</h4>${ticks.length ? ticks.map(([, l]) => `<div class="log-rec"><div class="m"><div class="ck">✓ ${esc(l)}</div></div></div>`).join('') : '<div class="small">Nothing ticked.</div>'}</div>`;
+  html += `<div class="log-sec"><h4>CHECKLIST · ${ticks.length} / ${CHECKLIST.length}</h4>${ticks.length ? ticks.map(([, l]) => `<div class="log-rec"><div class="m"><div class="ck">${ICON('check')}${esc(l)}</div></div></div>`).join('') : '<div class="small">Nothing ticked.</div>'}</div>`;
   if (!acts.length) html = `<div class="empty" style="margin:12px 0">${d >= START && d < today() ? 'Missed — nothing was logged on this day.' : 'Nothing logged on this day.'}</div>` + html;
   return html;
 }
@@ -1506,6 +1514,8 @@ document.addEventListener('click', e => {
   if (yt) { e.preventDefault(); e.stopPropagation(); openYouTube(yt.dataset.yt); return; }
   const navBtn = e.target.closest('#nav button[data-page]');
   if (navBtn) { showPage(navBtn.dataset.page); if (mobileMQ.matches) closeDrawer(false); return; }
+  const tabBtn = e.target.closest('#tabbar [data-tab]');
+  if (tabBtn) { showPage(tabBtn.dataset.tab); return; }
   const el = e.target.closest('[data-action]');
   if (!el) return;
   const act = el.dataset.action;
