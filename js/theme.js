@@ -10,16 +10,16 @@
 // Manual choice: stored with the date it was made ({date, theme}) and honoured only for that local
 // date; the next day the automatic rotation resumes.
 (function () {
+  // [id, name, page background — used for the browser/status-bar colour]. Light themes only.
   var THEMES = [
-    ['purple', 'Purple', '#6d3cf5'], ['pink', 'Pink', '#cf2470'], ['cyan', 'Cyan', '#0782a3'], ['midnight', 'Midnight', '#0b1120'],
-    ['sunset', 'Sunset', '#cf5a33'], ['arctic', 'Arctic', '#2f7fb8'], ['forest', 'Forest', '#0b120e'], ['ember', 'Ember', '#110c0a'],
-    ['lavender', 'Lavender', '#6f55bd'], ['ocean', 'Ocean', '#07131a'], ['rose', 'Rose', '#130c11'],
-    ['graphite', 'Graphite', '#111214'], ['coffee', 'Coffee', '#14100d'], ['wine', 'Wine', '#140a0e'], ['moss', 'Moss', '#10120b'],
-    ['sage', 'Sage', '#4f7a5b'], ['sand', 'Sand', '#8a6a2c'], ['clay', 'Clay', '#a44d2c'], ['plum', 'Plum', '#120c16'],
-    ['berry', 'Berry', '#170a12'], ['copper', 'Copper', '#120f0d'], ['slate', 'Slate', '#121820'], ['storm', 'Storm', '#1a1d22'],
-    ['aurora', 'Aurora', '#0a0f1a'], ['dusk', 'Dusk', '#121226'], ['dawn', 'Dawn', '#b3505f'], ['desert', 'Desert', '#a8591c'],
-    ['moonlight', 'Moonlight', '#080b12'], ['evergreen', 'Evergreen', '#061210'], ['crimson', 'Crimson', '#111012'], ['steel', 'Steel', '#0c1117'],
+    ['purple', 'Purple', '#f3f5fa'], ['pink', 'Pink', '#f3f5fa'], ['cyan', 'Cyan', '#f3f5fa'], ['sunset', 'Sunset', '#faf6f2'], ['arctic', 'Arctic', '#eef4f9'],
+    ['lavender', 'Lavender', '#f6f3fb'], ['sage', 'Sage', '#eef2ec'], ['sand', 'Sand', '#f5f0e6'], ['clay', 'Clay', '#f7efe9'], ['dawn', 'Dawn', '#fcf2ef'],
+    ['beige', 'Beige', '#f7f4ee'], ['cream', 'Cream', '#fbf8f1'], ['ivory', 'Ivory', '#fafaf4'], ['mint', 'Mint', '#f1f8f4'], ['sky', 'Sky', '#f1f6fc'],
+    ['mist', 'Mist', '#f2f4f7'], ['blush', 'Blush', '#fbf3f4'], ['peach', 'Peach', '#fdf5ef'], ['lilac', 'Lilac', '#f8f4fb'], ['pearl', 'Pearl', '#f6f6f4'],
+    ['linen', 'Linen', '#faf6f0'], ['oat', 'Oat', '#f6f2ea'], ['stone', 'Stone', '#f3f2ef'], ['ice', 'Ice', '#f0f7fa'], ['seafoam', 'Seafoam', '#eff9f6'],
+    ['butter', 'Butter', '#fcf9ec'], ['rosequartz', 'Rose Quartz', '#fbf3f5'], ['chalk', 'Chalk', '#f7f7f5'], ['porcelain', 'Porcelain', '#f3f6fa'], ['honeydew', 'Honeydew', '#f4f9ee'],
   ];
+
   var IDS = THEMES.map(function (t) { return t[0]; });
   var MANUAL_KEY = 'ez_theme_manual';
   var ANCHOR = Date.UTC(2026, 0, 1); // day 0 of the rotation

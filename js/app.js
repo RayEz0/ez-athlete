@@ -381,13 +381,12 @@ async function syncNow() {
 // "auto" = today's date-based theme; picking a theme stores {date, theme} and lasts only for today.
 // Picker swatches (each theme's --a1 → --a2 accent pair, as defined in app.css).
 const SWATCH = {
-  purple: ['#6d3cf5', '#a87bff'], pink: ['#cf2470', '#f472b6'], cyan: ['#0782a3', '#22c3e6'], midnight: ['#5b6cf0', '#8ea2ff'], sunset: ['#cf5a33', '#eea27a'],
-  arctic: ['#2f7fb8', '#7cc8e8'], forest: ['#2a7f58', '#4f9f7a'], ember: ['#b84a26', '#d8733f'], lavender: ['#6f55bd', '#9a86d6'], ocean: ['#15707a', '#2c9a98'],
-  rose: ['#a84468', '#c46d8e'], graphite: ['#d3d7de', '#8f96a3'], coffee: ['#d4b08a', '#a57a52'], wine: ['#8e2f45', '#b0536a'], moss: ['#5f6d27', '#86954a'],
-  sage: ['#4b7457', '#6f9477'], sand: ['#86672a', '#a3813f'], clay: ['#a44d2c', '#cf7b56'], plum: ['#7a4a9e', '#9c72bd'], berry: ['#a8295a', '#cc5783'],
-  copper: ['#9c5528', '#b3733f'], slate: ['#3f6b8f', '#6d93b3'], storm: ['#52617a', '#7b8aa2'], aurora: ['#1b7f7b', '#7a5fc4'], dusk: ['#645bab', '#8279c4'],
-  dawn: ['#b3505f', '#c8704f'], desert: ['#a2551b', '#b87632'], moonlight: ['#c3d0e6', '#8397b8'], evergreen: ['#176450', '#2f8a6c'], crimson: ['#a8232c', '#cc4a50'],
-  steel: ['#2a679a', '#5a88b2'],
+  purple: ['#6d3cf5', '#a87bff'], pink: ['#cf2470', '#f472b6'], cyan: ['#067894', '#22c3e6'], sunset: ['#b84f2b', '#eea27a'], arctic: ['#2a72a8', '#7cc8e8'],
+  lavender: ['#6f55bd', '#9a86d6'], sage: ['#4b7457', '#6f9477'], sand: ['#86672a', '#a3813f'], clay: ['#a44d2c', '#cf7b56'], dawn: ['#b3505f', '#c8704f'],
+  beige: ['#7b6243', '#a88b64'], cream: ['#856418', '#b8933a'], ivory: ['#5a6735', '#8a9a5b'], mint: ['#1d7556', '#3fa784'], sky: ['#2160c4', '#5b95e6'],
+  mist: ['#4b5d73', '#7b8ca3'], blush: ['#b03858', '#d9718c'], peach: ['#b94f2a', '#e88b5f'], lilac: ['#7d43a3', '#ad7fcf'], pearl: ['#585c68', '#8e93a0'],
+  linen: ['#95583a', '#c58a69'], oat: ['#7a6643', '#ab966e'], stone: ['#5b5850', '#8d887c'], ice: ['#1a7290', '#4fb0cc'], seafoam: ['#127a6f', '#3fb8a8'],
+  butter: ['#806600', '#c9a227'], rosequartz: ['#9b4c76', '#c987ab'], chalk: ['#33404d', '#5d6b7a'], porcelain: ['#33509b', '#6a8bd1'], honeydew: ['#4a751d', '#80ab4a'],
 };
 function buildThemeSelect() {
   $('#themeSelect').innerHTML = `<option value="auto"></option><optgroup label="Themes">${EZTheme.THEMES.map(([id, name]) => `<option value="${id}">${name}</option>`).join('')}</optgroup>`;
@@ -588,6 +587,7 @@ function nextUp(kind) {
 function renderDashboard() {
   const t = today(), n = dayNumber(t);
   $('#heroDate').textContent = fmtLong(t);
+  $('#dashDate').textContent = fmtLong(t);
   $('#heroDayNum').textContent = n >= 1 ? n : 1;
   $('#heroDaySub').textContent = n >= 1 ? fmtDMY(t) : (n === 0 ? `starts tomorrow · ${fmtDMY(START)}` : `starts in ${1 - n} days · ${fmtDMY(START)}`);
   renderWeightCard();
@@ -762,15 +762,14 @@ function renderSleepCard() {
   drawSleepChart();
 }
 
-// Dashboard nutrition card: calorie ring + protein bar only; the whole card opens today's food log.
+// Dashboard nutrition card: 5 activity rings + legend; the whole card opens today's food log.
 function renderNutritionCard() {
   const t = today(), tot = dayTotals(t), tg = targetsOn(t), has = foodOn(t).length;
   const pr = macroProgress(tot.kcal, tg.kcal, 'kcal');
   $('#nutritionCard').setAttribute('aria-label', `Nutrition today: ${fmtNum(tot.kcal)} of ${fmtNum(tg.kcal)} kcal, ${fmtNum(tot.protein)} of ${fmtNum(tg.protein)} g protein. Open food log.`);
   $('#nutritionCard').innerHTML = `<div class="card-h"><h2><svg class="i"><use href="#i-food"/></svg>Nutrition</h2><span class="chip ${has ? 'ok' : 'grey'}">${has ? `${has} item${has === 1 ? '' : 's'}` : 'Not logged'}</span></div>
-  <div class="nut-card-ring">${kcalRing(tot.kcal, tg.kcal, 'dash')}<div class="nut-card-left${pr.over ? ' over' : ''}">${esc(pr.text)}</div></div>
-  ${nutBar('protein', tot, tg)}
-  <div class="nut-card-go">${has ? 'Open food log' : 'Log today’s food'} <span aria-hidden="true">›</span></div>`;
+  <div class="nut-rings">${activityRings(tot, tg)}${ringLegend(tot, tg)}</div>
+  <div class="nut-card-foot"><span class="nut-card-left${pr.over ? ' over' : ''}">${esc(pr.text)}</span><span class="nut-card-go">${has ? 'Open food log' : 'Log today’s food'} <span aria-hidden="true">›</span></span></div>`;
 }
 
 function renderRecoveryCard() {
@@ -945,19 +944,24 @@ function macroRow(k, tot, tg) {
   const pr = macroProgress(tot[k], tg[k], unit);
   return `<div class="macro${pr.over ? ' over' : ''}" data-macro="${k}"><div class="macro-top"><span class="lbl">${label}</span><span class="val">${fmtMacro(k, tot[k])} / ${fmtNum(tg[k])} ${unit} · <b>${pr.pct}%</b></span></div><div class="bar"><i style="width:${pr.bar}%"></i></div><div class="macro-sub">${esc(pr.text)}</div></div>`;
 }
-// Calorie ring (SVG): fills with the theme accent, switches to the warning colour when over target.
-function kcalRing(eaten, target, id) {
-  const pr = macroProgress(eaten, target, 'kcal'), r = 52, C = 2 * Math.PI * r;
-  const len = Math.min(1, target > 0 ? eaten / target : 0) * C;
-  return `<div class="kring${pr.over ? ' over' : ''}" data-ring="${id}" role="img" aria-label="${fmtNum(eaten)} of ${fmtNum(target)} kcal eaten, ${pr.pct}%${pr.over ? ', over target' : ''}">
-    <svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="kg-${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="kg-a"/><stop offset="1" class="kg-b"/></linearGradient></defs>
-      <circle class="kr-track" cx="60" cy="60" r="${r}"/><circle class="kr-fill" cx="60" cy="60" r="${r}" stroke="url(#kg-${id})" stroke-dasharray="${len.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)"${len > 0 ? '' : ' visibility="hidden"'}/></svg>
-    <div class="kr-c"><b>${fmtNum(eaten)}</b><span>/ ${fmtNum(target)} kcal</span><em>${pr.pct}%</em></div></div>`;
+// Apple Activity-style rings, outer → inner: Calories (theme accent), Protein, Carbs, Fat, Fibre
+// (fixed colours in every theme). Over 100% the ring keeps going round with a darker,
+// shadowed tail (shown up to 200%).
+const RING_KEYS = ['kcal', 'protein', 'carbs', 'fat', 'fibre'];
+function activityRings(tot, tg) {
+  const W = 13, GAP = 3, R0 = 92;
+  const label = RING_KEYS.map(k => { const [, l, u] = MACROS.find(m => m[0] === k); return `${l} ${fmtMacro(k, tot[k])} of ${fmtNum(tg[k])} ${u}`; }).join(', ');
+  const rings = RING_KEYS.map((k, i) => {
+    const r = R0 - i * (W + GAP), C = 2 * Math.PI * r, p = tg[k] > 0 ? tot[k] / tg[k] : 0;
+    const base = Math.min(1, p), lap = Math.max(0, Math.min(1, p - 1));
+    const arc = (len, cls) => `<circle class="ar-fill${cls}" cx="100" cy="100" r="${r}" stroke-dasharray="${(len * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 100 100)"/>`;
+    return `<g class="ar ar-${k}${p > 1 ? ' ar-over' : ''}" data-ring="${k}" data-pct="${Math.round(p * 100)}" style="--c:${C.toFixed(1)}"><circle class="ar-track" cx="100" cy="100" r="${r}"/>${base > 0 ? arc(base, '') : ''}${lap > 0 ? arc(lap, ' ar-lap') : ''}</g>`;
+  }).join('');
+  return `<div class="arings" role="img" aria-label="${esc(label)}"><svg viewBox="0 0 200 200" aria-hidden="true">${rings}</svg></div>`;
 }
-// One horizontal macro bar: "112 / 160 g · 70%".
-function nutBar(k, tot, tg) {
-  const [, label, unit] = MACROS.find(m => m[0] === k), pr = macroProgress(tot[k], tg[k], unit);
-  return `<div class="nbar" data-macro="${k}"><div class="nbar-top"><span>${label}</span><b>${fmtMacro(k, tot[k])} / ${fmtNum(tg[k])} ${unit} · ${pr.pct}%</b></div><div class="bar"><i style="width:${pr.bar}%"></i></div></div>`;
+// Legend next to the rings: coloured dot + name + "eaten / target unit".
+function ringLegend(tot, tg) {
+  return `<ul class="alegend">${RING_KEYS.map(k => { const [, l, u] = MACROS.find(m => m[0] === k); return `<li class="al-${k}" data-macro="${k}"><i aria-hidden="true"></i><span>${l}</span><b>${fmtMacro(k, tot[k])} / ${fmtNum(tg[k])} ${u}</b></li>`; }).join('')}</ul>`;
 }
 
 let nutDay = null;      // selected day on the Nutrition page; null = follow today
@@ -991,10 +995,8 @@ function renderNutrition() {
   $('#nutTodayBtn').disabled = d === t;
   const kp = macroProgress(tot.kcal, tg.kcal, 'kcal');
   $('#nutTotals').innerHTML = `<div class="card-h"><div><div class="eyebrow">${d === t ? 'Today' : esc(weekdayLong(d))}</div><h2>${esc(fmtDMY(d))}</h2></div><span class="chip ${items.length ? 'ok' : 'grey'}">${items.length ? `${items.length} item${items.length === 1 ? '' : 's'}` : 'Nothing logged'}</span></div>
-  <div class="nut-sum">
-    <div class="nut-sum-ring">${kcalRing(tot.kcal, tg.kcal, 'page')}<div class="nut-card-left${kp.over ? ' over' : ''}">${esc(kp.text)}</div></div>
-    <div class="macros">${['protein', 'carbs', 'fat', 'fibre'].map(k => macroRow(k, tot, tg)).join('')}</div>
-  </div>
+  <div class="nut-rings nut-rings-lg">${activityRings(tot, tg)}<div>${ringLegend(tot, tg)}<div class="nut-card-left${kp.over ? ' over' : ''}">${esc(kp.text)}</div></div></div>
+  <div class="macros">${['protein', 'carbs', 'fat', 'fibre'].map(k => macroRow(k, tot, tg)).join('')}</div>
   <p class="small" style="margin-top:12px">Targets ${tg.effective ? `effective from ${esc(fmtDMY(tg.effective))}` : '(defaults)'} · change them under <b>Targets</b> below.</p>`;
   renderMealBreakdown(items, tot);
   renderNutWeek(d);
@@ -1561,6 +1563,10 @@ $('#savedAddDialog').addEventListener('change', updateSavedPreview);
 $('#saCustom').addEventListener('input', updateSavedPreview);
 $('#smRows').addEventListener('input', updateSmTotals);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && app.classList.contains('drawer-open')) closeDrawer(); });
+
+// iOS-style large titles: the small top-bar title fades in once the page's large title scrolls away.
+const syncBarTitle = () => document.body.classList.toggle('scrolled', window.scrollY > 56);
+window.addEventListener('scroll', syncBarTitle, { passive: true });
 
 let resizeTimer = null;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(drawCharts, 150); });

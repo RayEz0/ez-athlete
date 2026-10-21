@@ -94,6 +94,7 @@
 
 <!-- ============ DASHBOARD ============ -->
 <section class="page active" id="dashboard" aria-label="Dashboard">
+  <div class="page-head dash-head"><div><div class="eyebrow" id="dashDate">—</div><h1>Dashboard</h1></div></div>
   <div class="dash-grid">
     <div class="card hero span-12">
       <div class="hero-top"><div class="eyebrow">EZ LIFE STYLE TRACKER</div><span class="chip" id="heroDate">—</span></div>
@@ -104,9 +105,9 @@
           <div><b>10k</b><span>Steps / day</span></div><div><b>4 + 1</b><span>Gym sessions / week</span></div>
         </div>
       </div>
+      <p class="hero-quote"><span id="dailyQuote"></span> <cite id="quoteAuthor"></cite></p>
       <p class="hero-sub">full-body athletic training · basketball performance · disciplined fat loss</p>
     </div>
-
 
     <div class="card span-6" id="checkinCard">
       <div class="card-h"><h2>Daily check-in</h2><span class="chip grey" id="checkinDate">—</span></div>
@@ -125,8 +126,18 @@
 
     <a class="card span-6 nut-card" id="nutritionCard" href="#/nutrition" data-action="open-nutrition" aria-label="Open today’s nutrition"></a>
 
-    <div class="card span-7" id="weekCard"></div>
-    <div class="card quote-card span-5" id="quoteCard"><div class="eyebrow">Daily quote</div><blockquote id="dailyQuote"></blockquote><cite id="quoteAuthor"></cite></div>
+    <div class="card span-7" id="missionCard"></div>
+
+    <div class="card span-5" id="checklistCard">
+      <div class="card-h"><h2>Today’s checklist</h2><div class="ring" id="checkRing"><span id="checkRingTxt">0/9</span></div></div>
+      <ul class="checklist" id="checklist"></ul>
+    </div>
+
+    <div class="card span-6" id="weekCard"></div>
+
+    <div class="card span-6" id="recoveryCard"></div>
+
+    <div class="card span-12" id="focusCard"></div>
 
     <div class="card span-6" id="weightCard">
       <div class="card-h"><h2><svg class="i"><use href="#i-scale"/></svg>Weight</h2><span class="chip" id="wTrendChip">—</span></div>
@@ -140,6 +151,7 @@
       <div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="small">Weekly change: <b id="wWeekly">—</b></span><span class="small" id="wToGo"></span></div>
       <button type="button" class="btn btn-ghost btn-block" data-action="focus-checkin">Log or change today’s weight</button>
     </div>
+
     <div class="card span-6" id="sleepCard">
       <div class="card-h"><h2><svg class="i"><use href="#i-moon"/></svg>Sleep</h2><span class="chip" id="sTargetChip">Target 8 h</span></div>
       <div class="kpis">
@@ -156,16 +168,6 @@
       </div>
       <button type="button" class="btn btn-ghost btn-block" data-action="focus-checkin" data-field="sleep">Log or change today’s sleep</button>
     </div>
-
-    <div class="card span-7" id="missionCard"></div>
-    <div class="card span-5" id="checklistCard">
-      <div class="card-h"><h2>Today’s checklist</h2><div class="ring" id="checkRing"><span id="checkRingTxt">0/9</span></div></div>
-      <ul class="checklist" id="checklist"></ul>
-    </div>
-
-    <div class="card span-12" id="recoveryCard"></div>
-
-    <div class="card span-12" id="focusCard"></div>
   </div>
 </section>
 
