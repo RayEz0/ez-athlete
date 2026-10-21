@@ -123,7 +123,22 @@ const dayTotals = d => sumMacros(foodOn(d).map(a => a.details || {}));
 const targetsOn = d => targetFor(S.targets, d);
 const dayProtein = d => dayTotals(d).protein;
 const dayCalories = d => dayTotals(d).kcal;
-const checked = (d, k) => !!S.checks[d]?.[k]?.v;
+// Checklist auto-ticks come from the day's logs (so they sync with the logs). autoTick() returns the newest matching log's
+// timestamp, or '' when nothing on that day qualifies. A manual untick made after that log keeps the item off; a manual tick
+// stays on even if the log is later deleted. steps / creatine / tomorrow have no matching log and stay manual.
+const AUTO_TYPES = { gym: ['gym'], sport: ['basketball', 'match', 'running'], plyo: ['plyo'], core: ['core'] };
+const lastStamp = list => list.reduce((m, a) => { const x = a.updatedAt || a.createdAt || ''; return x > m ? x : m; }, '') || '0';
+function autoTick(d, k) {
+  if (AUTO_TYPES[k]) { const a = actsOn(d, AUTO_TYPES[k]); return a.length ? lastStamp(a) : ''; }
+  if (k === 'protein') { const f = foodOn(d); return f.length && dayProtein(d) >= targetsOn(d).protein ? lastStamp(f) : ''; }
+  if (k === 'sleep') { const sl = sleepOn(d); return sl && sl.details.hours >= SLEEP_TARGET ? lastStamp([sl]) : ''; }
+  return '';
+}
+const checked = (d, k) => {
+  const m = S.checks[d]?.[k], a = autoTick(d, k);
+  if (a && !(m && !m.v && m.t > a)) return true;
+  return !!m?.v;
+};
 
 // ---------- programs ----------
 const KINDS = {
@@ -728,18 +743,10 @@ function buildChecklist() {
 function renderChecklist() {
   const t = today();
   let n = 0;
-  const auto = {
-    gym: actsOn(t, ['gym']).length > 0,
-    sport: actsOn(t, ['basketball', 'match', 'running']).length > 0,
-    plyo: actsOn(t, ['plyo']).length > 0,
-    core: actsOn(t, ['core']).length > 0,
-    protein: dayProtein(t) >= targetsOn(t).protein,
-    sleep: (sleepOn(t)?.details.hours ?? 0) >= SLEEP_TARGET,
-  };
   for (const cb of $$('#checklist input[data-task]')) {
     cb.checked = checked(t, cb.dataset.task);
     if (cb.checked) n++;
-    $(`[data-auto="${cb.dataset.task}"]`).hidden = !auto[cb.dataset.task];
+    $(`[data-auto="${cb.dataset.task}"]`).hidden = !(cb.checked && autoTick(t, cb.dataset.task));
   }
   $('#checkRing').style.setProperty('--p', Math.round(n / CHECKLIST.length * 100));
   $('#checkRingTxt').textContent = `${n}/${CHECKLIST.length}`;
