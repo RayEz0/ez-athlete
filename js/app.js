@@ -15,7 +15,6 @@ const EZTheme = window.EZTheme; // from js/theme.js
 const THEMES = Object.fromEntries(EZTheme.THEMES.map(([id, , color]) => [id, color]));
 const THEME_NAMES = Object.fromEntries(EZTheme.THEMES.map(([id, name]) => [id, name]));
 const TRAINING_TYPES = ['gym', 'plyo', 'core', 'basketball', 'match', 'running'];
-const darkMQ = matchMedia('(prefers-color-scheme: dark)'); // auto dark mode follows the phone setting (styles in app.css)
 const PAGE_TITLES = { dashboard: 'Dashboard', sessions: 'GYM', plyo: 'Plyometrics', core: 'Core', basketball: 'Basketball', running: 'Running', nutrition: 'Nutrition', recovery: 'Recovery', tracking: 'Logs' };
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -510,11 +509,10 @@ tpList.addEventListener('keydown', e => {
 });
 tpBtn.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); openPicker(true); } });
 document.addEventListener('pointerdown', e => { if (!tpPop.hidden && !e.target.closest('#themePicker')) closePicker(false); });
-darkMQ.addEventListener?.('change', () => { applyTheme(); render(); });
 function applyTheme() {
   const { theme, mode } = EZTheme.resolve(today());
   document.documentElement.setAttribute('data-theme', theme);
-  $('meta[name="theme-color"]').setAttribute('content', darkMQ.matches ? '#000000' : THEMES[theme]);
+  $('meta[name="theme-color"]').setAttribute('content', THEMES[theme]);
   const sel = $('#themeSelect'), daily = EZTheme.dailyTheme(today());
   sel.options[0].textContent = `Daily · ${THEME_NAMES[daily]}`;
   sel.value = mode === 'auto' ? 'auto' : theme;
@@ -922,7 +920,7 @@ function drawWeightChart() {
   ctx.setLineDash([4, 4]); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(pad.l, Y(TARGET_KG)); ctx.lineTo(w - pad.r, Y(TARGET_KG)); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle = '#94a3b8'; ctx.fillText('76 kg target', pad.l + 2, Y(TARGET_KG) - 4);
-  const a1 = cssVar('--chart-a1') || cssVar('--a1') || '#6d3cf5', a2 = cssVar('--a2') || '#a87bff';
+  const a1 = cssVar('--a1') || '#6d3cf5', a2 = cssVar('--a2') || '#a87bff';
   const grad = ctx.createLinearGradient(0, pad.t, 0, h);
   grad.addColorStop(0, a2 + '55'); grad.addColorStop(1, a2 + '00');
   if (pts.length > 1) {
@@ -953,7 +951,7 @@ function drawRunChart() {
     ctx.fillText(`${Math.round(maxT * (1 - i / 3))}m`, 6, y + 4);
   }
   ctx.fillStyle = cssVar('--muted') || '#667085'; ctx.fillText('time ↑', 6, 12); ctx.fillText('runs →', w - 60, h - 8);
-  const a1 = cssVar('--chart-a1') || cssVar('--a1') || '#6d3cf5';
+  const a1 = cssVar('--a1') || '#6d3cf5';
   const X = i => arr.length === 1 ? pad.l + iw / 2 : pad.l + iw * i / (arr.length - 1);
   const Y = v => pad.t + ih * (1 - v / maxT);
   ctx.strokeStyle = a1; ctx.lineWidth = 2; ctx.beginPath();

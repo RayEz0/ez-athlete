@@ -1,5 +1,6 @@
 /* EZ LIFE STYLE TRACKER — styles */
 :root{
+  color-scheme:light; /* light mode only: never auto-darken forms, inputs or scrollbars */
   --bg:#f3f5fa;--card:#fff;--ink:#0f172a;--ink2:#334155;--muted:#64748b;--line:#e4e8f0;--line2:#eef1f6;
   --ok:#15803d;--ok-soft:#e8f6ed;--warn:#b45309;--warn-soft:#fdf3e4;--bad:#b42318;--bad-soft:#fdecea;
   --radius:20px;--radius-sm:14px;
@@ -745,7 +746,7 @@ select.input{-webkit-appearance:none;appearance:none;background-image:linear-gra
 }
 
 /* =====================================================================
-   SF Symbols-style line icons · iOS tab bar (phones) · automatic dark mode
+   SF Symbols-style line icons · iOS tab bar (phones)
    ===================================================================== */
 /* one icon set: inline SVG sprite, thin rounded strokes, currentColor */
 svg.i{stroke-width:1.75}
@@ -761,7 +762,6 @@ svg.i-sm{width:15px;height:15px;stroke-width:2.1;vertical-align:-2px}
 .toast-ic{width:18px;height:18px;margin-right:-6px;color:#30d158;stroke-width:2.4}
 .nut-logbtn svg.i{width:22px;height:22px;stroke-width:2.2}
 .sm-del svg.i-sm{margin:0}
-.ar-kcal,.al-kcal{--ring:var(--a-ring,var(--a1))}
 
 /* iOS tab bar — phones only; the ☰ menu keeps every other page */
 .tabbar{display:none}
@@ -783,68 +783,3 @@ svg.i-sm{width:15px;height:15px;stroke-width:2.1;vertical-align:-2px}
 }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.tabbar{background:var(--surface)}}
 
-/* Dark mode follows the phone setting. Apple dark: black page, #1C1C1E cards, light text.
-   Each theme keeps its accent: buttons/fills use --a1 (white text ≥4.5:1); accent text, the
-   calorie ring and charts use a brightened --a-ink (≥4.5:1 on cards and tinted chips).
-   Macro ring colours stay fixed. Light mode is unchanged. */
-@media (prefers-color-scheme:dark){
-  :root[data-theme]{
-    color-scheme:dark;
-    --bg:#000;--card:#1c1c1e;--surface:#1c1c1e;--surface-2:#2c2c2e;
-    --ink:#f5f5f7;--ink2:#d1d1d6;--muted:#a1a1a6;--line:#38383a;--line2:#2c2c2e;--line-strong:#545458;--nav-ink:#d1d1d6;
-    --chip-grey-bg:#2c2c2e;--chip-grey-ink:#aeaeb2;
-    --ok:#30d158;--ok-soft:rgba(48,209,88,.16);--warn:#ffb340;--warn-soft:rgba(255,159,10,.16);--bad:#ff6961;--bad-soft:rgba(255,69,58,.16);
-    --rest-bg:rgba(100,210,255,.12);--rest-line:rgba(100,210,255,.22);--rest-ink:#64d2ff;
-    --sleep-good-ink:#30d158;--sleep-mid-ink:#ffd60a;--sleep-low-ink:#ff6961;
-    --shadow-sm:none;--shadow:none;
-    --fill:rgba(118,118,128,.24);--fill2:rgba(118,118,128,.14);--sep:rgba(84,84,88,.65);
-    --glass:rgba(22,22,24,.72);--glass-strong:rgba(28,28,30,.86);--side-bg:#1c1c1e;
-    --a-ring:var(--a-ink);--chart-a1:var(--a-ink);
-  }
-  :root[data-theme="purple"]{--a-ink:#ab8efe;--a-soft:#39334b;--a-soft2:#50456e;--a-glow:rgba(171,142,254,.3)}
-  :root[data-theme="pink"]{--a-ink:#ed79ac;--a-soft:#462f3a;--a-soft2:#673e51;--a-glow:rgba(237,121,172,.3)}
-  :root[data-theme="cyan"]{--a-ink:#00acd6;--a-soft:#163943;--a-soft2:#125060;--a-glow:rgba(0,172,214,.3)}
-  :root[data-theme="sage"]{--a-ink:#79ac88;--a-soft:#2f3933;--a-soft2:#3e5044;--a-glow:rgba(121,172,136,.3)}
-  :root[data-theme="sand"]{--a-ink:#c8993b;--a-soft:#3e3524;--a-soft2:#5a4928;--a-glow:rgba(200,153,59,.3)}
-  :root[data-theme="clay"]{--a-ink:#dd8b6c;--a-soft:#43322e;--a-soft2:#61443a;--a-glow:rgba(221,139,108,.3)}
-  :root[data-theme="dawn"]{--a-ink:#d28e98;--a-soft:#403336;--a-soft2:#5d454a;--a-glow:rgba(210,142,152,.3)}
-  :root[data-theme="lavender"]{--a-ink:#a797da;--a-soft:#383544;--a-soft2:#4e4862;--a-glow:rgba(167,151,218,.3)}
-  :root[data-theme="sunset"]{--a-ink:#e2896a;--a-soft:#44322d;--a-soft2:#634339;--a-glow:rgba(226,137,106,.3)}
-  :root[data-theme="arctic"]{--a-ink:#5ea7dd;--a-soft:#293844;--a-soft2:#344e63;--a-glow:rgba(94,167,221,.3)}
-  :root[data-theme="beige"]{--a-ink:#b99c78;--a-soft:#3b3630;--a-soft2:#554a3e;--a-glow:rgba(185,156,120,.3)}
-  :root[data-theme="cream"]{--a-ink:#cd981d;--a-soft:#3f351e;--a-soft2:#5c491e;--a-glow:rgba(205,152,29,.3)}
-  :root[data-theme="ivory"]{--a-ink:#93a952;--a-soft:#343828;--a-soft2:#474f31;--a-glow:rgba(147,169,82,.3)}
-  :root[data-theme="mint"]{--a-ink:#26b582;--a-soft:#1e3b32;--a-soft2:#205342;--a-glow:rgba(38,181,130,.3)}
-  :root[data-theme="sky"]{--a-ink:#71a1ec;--a-soft:#2d3747;--a-soft2:#3b4c68;--a-glow:rgba(113,161,236,.3)}
-  :root[data-theme="mist"]{--a-ink:#91a3ba;--a-soft:#33373d;--a-soft2:#464d56;--a-glow:rgba(145,163,186,.3)}
-  :root[data-theme="blush"]{--a-ink:#dd889f;--a-soft:#433238;--a-soft2:#62434c;--a-glow:rgba(221,136,159,.3)}
-  :root[data-theme="peach"]{--a-ink:#e38969;--a-soft:#44322d;--a-soft2:#634339;--a-glow:rgba(227,137,105,.3)}
-  :root[data-theme="lilac"]{--a-ink:#ba91d5;--a-soft:#3c3343;--a-soft2:#554660;--a-glow:rgba(186,145,213,.3)}
-  :root[data-theme="pearl"]{--a-ink:#9ca0ad;--a-soft:#36363b;--a-soft2:#4a4c51;--a-glow:rgba(156,160,173,.3)}
-  :root[data-theme="linen"]{--a-ink:#ce9477;--a-soft:#403430;--a-soft2:#5c473e;--a-glow:rgba(206,148,119,.3)}
-  :root[data-theme="oat"]{--a-ink:#b69e74;--a-soft:#3b362f;--a-soft2:#544b3d;--a-glow:rgba(182,158,116,.3)}
-  :root[data-theme="stone"]{--a-ink:#a5a198;--a-soft:#373736;--a-soft2:#4d4c4a;--a-glow:rgba(165,161,152,.3)}
-  :root[data-theme="ice"]{--a-ink:#1facdc;--a-soft:#1d3944;--a-soft2:#1d5062;--a-glow:rgba(31,172,220,.3)}
-  :root[data-theme="seafoam"]{--a-ink:#14b4a3;--a-soft:#1a3a39;--a-soft2:#19534e;--a-glow:rgba(20,180,163,.3)}
-  :root[data-theme="butter"]{--a-ink:#c59d00;--a-soft:#3e3618;--a-soft2:#594a13;--a-glow:rgba(197,157,0,.3)}
-  :root[data-theme="rosequartz"]{--a-ink:#cb8eaf;--a-soft:#3f333b;--a-soft2:#5b4552;--a-glow:rgba(203,142,175,.3)}
-  :root[data-theme="chalk"]{--a-ink:#8fa3b7;--a-soft:#33373d;--a-soft2:#454d55;--a-glow:rgba(143,163,183,.3)}
-  :root[data-theme="porcelain"]{--a-ink:#8aa1dc;--a-soft:#323744;--a-soft2:#434c63;--a-glow:rgba(138,161,220,.3)}
-  :root[data-theme="honeydew"]{--a-ink:#6db226;--a-soft:#2c3a20;--a-soft2:#395221;--a-glow:rgba(109,178,38,.3)}
-  body{background:var(--bg)}
-  .nav-group{color:var(--muted)}
-  .btn:hover{background:rgba(118,118,128,.32)}
-  .btn-danger,.btn-danger:hover{color:var(--bad)}
-  .toast{background:#2c2c2e;border-color:rgba(255,255,255,.1);box-shadow:0 18px 40px -12px rgba(0,0,0,.8)}
-  .pow{color:#ffb340;background:rgba(255,159,10,.18)}
-  .ex input[type=checkbox]{border-color:#636366;background:transparent}
-  .hero-day strong{background-image:linear-gradient(135deg,var(--a-ink),var(--a2))}
-  .ar-track{stroke-opacity:.28}
-  .bar>i{background:linear-gradient(90deg,var(--a-ink),var(--a2))}
-  .checklist .box{background:rgba(120,120,128,.36)}
-  .checklist input:checked+.box{background:var(--a-ink)}
-  .seg input:checked+label,.serv-row input:checked+label{background:#636366;color:#fff;box-shadow:none}
-  .tabbar button.active{color:var(--a-ink)}
-  .modal::backdrop,.backdrop{background:rgba(0,0,0,.6)}
-  .tp-pop{box-shadow:0 18px 40px -12px rgba(0,0,0,.8)}
-}
