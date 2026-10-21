@@ -763,23 +763,36 @@ svg.i-sm{width:15px;height:15px;stroke-width:2.1;vertical-align:-2px}
 .nut-logbtn svg.i{width:22px;height:22px;stroke-width:2.2}
 .sm-del svg.i-sm{margin:0}
 
-/* iOS tab bar — phones only; the ☰ menu keeps every other page */
+/* Floating dock tab bar — phones only; the ☰ menu keeps every other page */
 .tabbar{display:none}
 @media (max-width:767px){
-  :root{--tabbar-h:50px}
-  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:900;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
-    padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    background:var(--glass-strong);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--sep)}
-  .tabbar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:var(--tabbar-h);min-width:0;padding:5px 2px 2px;border:0;background:transparent;
-    color:var(--muted);font-size:10.5px;font-weight:600;letter-spacing:.01em;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  :root{--dock-h:64px;--dock-gap:12px;--dock-pad:6px}
+  .tabbar{position:fixed;z-index:900;left:calc(16px + env(safe-area-inset-left));right:calc(16px + env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom) + var(--dock-gap));
+    max-width:420px;height:var(--dock-h);margin:0 auto;padding:var(--dock-pad);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-radius:32px;
+    background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid rgba(255,255,255,.75);box-shadow:0 8px 30px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.05);
+    transition:opacity .25s var(--ease),transform .3s var(--ease),visibility 0s}
+  /* soft pill behind the active tab; slides between tabs */
+  .tabbar::before{content:"";position:absolute;top:var(--dock-pad);bottom:var(--dock-pad);left:var(--dock-pad);width:calc((100% - 2 * var(--dock-pad)) / 4);border-radius:26px;
+    background:var(--a-soft);box-shadow:inset 0 0 0 1px var(--a-soft2);opacity:0;transform:translateX(calc(var(--tab-i, 0) * 100%));transition:transform .35s var(--ease),opacity .2s;pointer-events:none}
+  .tabbar:has(.active)::before{opacity:1}
+  .tabbar:has(button:nth-child(2).active){--tab-i:1}
+  .tabbar:has(button:nth-child(3).active){--tab-i:2}
+  .tabbar:has(button:nth-child(4).active){--tab-i:3}
+  .tabbar button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:100%;min-width:0;padding:0 2px;border:0;border-radius:26px;background:transparent;
+    color:var(--muted);font-size:10.5px;font-weight:600;letter-spacing:.01em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .25s var(--ease)}
   .tabbar button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tabbar svg.i{width:25px;height:25px;transition:transform .12s var(--ease)}
-  .tabbar button.active{color:var(--a1)}
+  .tabbar svg.i{width:24px;height:24px;transition:transform .12s var(--ease)}
+  .tabbar button.active{color:var(--a-ink);font-weight:700}
   .tabbar button:active svg.i{transform:scale(.88)}
-  .tabbar button:focus-visible{outline:2px solid var(--a-glow);outline-offset:-4px;border-radius:10px}
-  /* content and the undo toast clear the bar + the iPhone home indicator */
-  main{padding-bottom:calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom))}
-  .toast{bottom:calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom))}
+  .tabbar button:focus-visible{outline:2px solid var(--a-glow);outline-offset:-3px}
+  /* content and the undo toast clear the dock + the iPhone home indicator */
+  main{padding-bottom:calc(var(--dock-h) + var(--dock-gap) + 28px + env(safe-area-inset-bottom))}
+  .toast{bottom:calc(var(--dock-h) + var(--dock-gap) + 12px + env(safe-area-inset-bottom))}
+  /* out of the way while the ☰ menu or a sheet/dialog is open */
+  .app.drawer-open~.tabbar,body:has(dialog[open]) .tabbar{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(calc(100% + var(--dock-gap)));
+    transition:opacity .2s,transform .3s var(--ease),visibility 0s linear .3s}
 }
+@supports not selector(:has(*)){@media (max-width:767px){.tabbar button.active{background:var(--a-soft)}}}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.tabbar{background:var(--surface)}}
 
