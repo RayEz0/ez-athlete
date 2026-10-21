@@ -9,7 +9,7 @@ const KEY_V4 = 'ez76_tracker_v4';       // legacy state — read for migration, 
 const SIDEBAR_KEY = 'ez76_sidebar_collapsed';
 const DIRTY_KEY = 'ez_sync_dirty';
 const API = '/api/state';
-const START = '2026-09-29';             // Day 1. No end date.
+const START = '2026-10-22';             // Day 1 (program start). Streak, consistency, weekly stats and start weight count from here. No end date.
 const TARGET_KG = 76, GYM_WEEK_TARGET = 4; // nutrition targets are date-effective: see targetsOn()
 const EZTheme = window.EZTheme; // from js/theme.js
 const THEMES = Object.fromEntries(EZTheme.THEMES.map(([id, , color]) => [id, color]));
@@ -39,6 +39,8 @@ const fmtDMY = k => toDate(k).toLocaleDateString(undefined, { day: 'numeric', mo
 const fmtDM = k => toDate(k).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 const weekdayLong = k => toDate(k).toLocaleDateString(undefined, { weekday: 'long' });
 const dayNumber = (k = today()) => daysBetween(START, k) + 1;
+const startsIn = (n = dayNumber()) => (n === 0 ? 'Starts tomorrow' : `Starts in ${1 - n} days`); // only for n < 1
+const maxDate = (a, b) => (a > b ? a : b);
 const isDateKey = v => /^\d{4}-\d{2}-\d{2}$/.test(v || '');
 const nowIso = () => new Date().toISOString();
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}-${Math.random().toString(36).slice(2, 10)}`);
@@ -533,7 +535,7 @@ function render() {
 function renderChrome() {
   const t = today(), n = dayNumber(t);
   $('#sideDate').textContent = toDate(t).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
-  $('#sideDay').textContent = n >= 1 ? `DAY ${n}` : `STARTS ${fmtDM(START).toUpperCase()}`;
+  $('#sideDay').textContent = n >= 1 ? `DAY ${n}` : startsIn(n).toUpperCase();
   for (const id of ['runDate', 'medDate']) {
     const el = $(`#${id}`);
     el.max = t;
@@ -588,8 +590,8 @@ function renderDashboard() {
   const t = today(), n = dayNumber(t);
   $('#heroDate').textContent = fmtLong(t);
   $('#dashDate').textContent = fmtLong(t);
-  $('#heroDayNum').textContent = n >= 1 ? n : 1;
-  $('#heroDaySub').textContent = n >= 1 ? fmtDMY(t) : (n === 0 ? `starts tomorrow · ${fmtDMY(START)}` : `starts in ${1 - n} days · ${fmtDMY(START)}`);
+  $('#heroDayNum').textContent = n >= 1 ? n : '—';
+  $('#heroDaySub').textContent = n >= 1 ? fmtDMY(t) : `${startsIn(n)} · ${fmtDMY(START)}`;
   renderWeightCard();
   renderCheckin();
   renderScorecard();
@@ -606,11 +608,11 @@ function renderDashboard() {
 
 function renderWeightCard() {
   const w = weights(), t = today();
-  const cur = w[w.length - 1], start = w[0];
+  const cur = w[w.length - 1], start = w.find(x => x.date >= START);
   $('#wCurrent').innerHTML = cur ? `${fmtNum(cur.details.kg, 1)}<small>kg</small>` : '—';
   $('#wStart').innerHTML = start ? `${fmtNum(start.details.kg, 1)}<small>kg</small>` : '—';
   const ch = $('#wChange');
-  if (cur && start && w.length > 1) {
+  if (cur && start && cur !== start) {
     const diff = cur.details.kg - start.details.kg;
     ch.innerHTML = `${diff > 0 ? '+' : diff < 0 ? '−' : ''}${fmtNum(Math.abs(diff), 1)}<small>kg</small>`;
     ch.className = `v ${diff < 0 ? 'good' : diff > 0 ? 'bad' : ''}`;
@@ -666,16 +668,16 @@ function scoreRow(label, val, pct) {
   return `<div class="score-row"><span class="lbl">${label}</span><span class="val">${val}</span>${pct == null ? '' : `<div class="bar"><i style="width:${Math.min(100, Math.max(0, pct))}%"></i></div>`}</div>`;
 }
 function renderScorecard() {
-  const t = today(), days = weekDays(t), ws = days[0], we = days[6];
-  const c = types => actsIn(ws, we, types).length;
+  const t = today(), days = weekDays(t), ws = days[0], we = days[6], from = maxDate(ws, START);
+  const c = types => actsIn(from, we, types).length;
   const gym = c(['gym']);
-  const runs = actsIn(ws, we, ['running']);
+  const runs = actsIn(from, we, ['running']);
   const km = runs.reduce((s, a) => s + (Number(a.details?.distance) || 0), 0);
-  const upTo = days.filter(d => d <= t);
+  const upTo = days.filter(d => d <= t && d >= START);
   const proteinDays = upTo.filter(d => dayProtein(d) >= targetsOn(d).protein || checked(d, 'protein')).length;
   const stepDays = upTo.filter(d => checked(d, 'steps')).length;
   const sleepDays = upTo.filter(d => checked(d, 'sleep') || (sleepOn(d)?.details.hours ?? 0) >= SLEEP_TARGET).length;
-  const w = weights(), inWeek = w.filter(x => x.date >= ws && x.date <= we), before = w.filter(x => x.date < ws).pop();
+  const w = weights().filter(x => x.date >= START), inWeek = w.filter(x => x.date >= ws && x.date <= we), before = w.filter(x => x.date < ws).pop();
   let wTxt = '—';
   if (inWeek.length) {
     const base = before || inWeek[0], last = inWeek[inWeek.length - 1];
@@ -787,8 +789,8 @@ function qualifies(d) { return actsOn(d, [...TRAINING_TYPES, 'rest']).length > 0
 function renderFocus() {
   const t = today(), days = weekDays(t);
   let streak = 0, d = qualifies(t) ? t : addDays(t, -1);
-  while (qualifies(d) && streak < 3650) { streak++; d = addDays(d, -1); }
-  const first = S.activities.filter(a => TRAINING_TYPES.includes(a.type)).map(a => a.date).sort()[0];
+  while (d >= START && qualifies(d) && streak < 3650) { streak++; d = addDays(d, -1); }
+  const first = S.activities.filter(a => TRAINING_TYPES.includes(a.type) && a.date >= START && a.date <= t).map(a => a.date).sort()[0];
   let consistency = '—';
   if (first) {
     const span = Math.min(28, daysBetween(first, t) + 1);
@@ -797,10 +799,11 @@ function renderFocus() {
     consistency = `${Math.round(hit / span * 100)}%`;
   }
   // food items count once per day here (a day's food log = one "nutrition" log)
-  const weekFoodDays = new Set(actsIn(days[0], days[6], ['food']).map(a => a.date)).size;
-  const weekActs = actsIn(days[0], days[6]).filter(a => a.type !== 'weight' && a.type !== 'food').length + weekFoodDays;
+  const wFrom = maxDate(days[0], START);
+  const weekFoodDays = new Set(actsIn(wFrom, days[6], ['food']).map(a => a.date)).size;
+  const weekActs = actsIn(wFrom, days[6]).filter(a => a.type !== 'weight' && a.type !== 'food').length + weekFoodDays;
   const nx = nextUp('gym');
-  const checkDays = days.filter(x => x <= t);
+  const checkDays = days.filter(x => x <= t && x >= START);
   const avg = checkDays.length ? Math.round(checkDays.reduce((s, x) => s + CHECKLIST.filter(([k]) => checked(x, k)).length, 0) / (checkDays.length * CHECKLIST.length) * 100) : 0;
   $('#focusCard').innerHTML = `<div class="card-h"><div><div class="eyebrow">Athletic focus</div><h2>Consistency is the program</h2></div><span class="chip">Checklist this week: ${avg}%</span></div>
   <div class="focus-kpis">
@@ -997,7 +1000,7 @@ function renderNutrition() {
   $('#nutTotals').innerHTML = `<div class="card-h"><div><div class="eyebrow">${d === t ? 'Today' : esc(weekdayLong(d))}</div><h2>${esc(fmtDMY(d))}</h2></div><span class="chip ${items.length ? 'ok' : 'grey'}">${items.length ? `${items.length} item${items.length === 1 ? '' : 's'}` : 'Nothing logged'}</span></div>
   <div class="nut-rings nut-rings-lg">${activityRings(tot, tg)}<div>${ringLegend(tot, tg)}<div class="nut-card-left${kp.over ? ' over' : ''}">${esc(kp.text)}</div></div></div>
   <div class="macros">${['protein', 'carbs', 'fat', 'fibre'].map(k => macroRow(k, tot, tg)).join('')}</div>
-  <p class="small" style="margin-top:12px">Targets ${tg.effective ? `effective from ${esc(fmtDMY(tg.effective))}` : '(defaults)'} · change them under <b>Targets</b> below.</p>`;
+  <p class="small" style="margin-top:12px">Targets ${tg.effective ? `effective from ${esc(fmtDMY(tg.effective))}` : `(defaults, effective from ${esc(fmtDMY(START))})`} · change them under <b>Targets</b> below.</p>`;
   renderMealBreakdown(items, tot);
   renderNutWeek(d);
   renderQuickAdd(d);
@@ -1017,7 +1020,7 @@ function renderMealBreakdown(items, tot) {
   }).join('')}</div>`;
 }
 function renderNutWeek(d) {
-  const days = weekDays(d).filter(x => x <= today());
+  const days = weekDays(d).filter(x => x <= today() && x >= START);
   const logged = days.filter(x => foodOn(x).length);
   const sum = logged.reduce((s, x) => { const tt = dayTotals(x); s.kcal += tt.kcal; s.protein += tt.protein; return s; }, { kcal: 0, protein: 0 });
   const hit = logged.filter(x => dayProtein(x) >= targetsOn(x).protein).length;
@@ -1085,7 +1088,7 @@ function renderTargetsPanel() {
   const hist = [...S.targets].sort((a, b) => b.effective.localeCompare(a.effective));
   $('#targetsHistory').innerHTML = hist.length
     ? hist.map(x => `<div class="hist-item"><div class="m"><b>From ${esc(fmtDMY(x.effective))}</b><span>${fmtNum(x.kcal)} kcal · P ${fmtNum(x.protein)} g · C ${fmtNum(x.carbs)} g · F ${fmtNum(x.fat)} g · Fibre ${fmtNum(x.fibre)} g</span></div><button type="button" class="btn btn-sm btn-danger" data-action="target-del" data-id="${esc(x.id)}" aria-label="Remove targets from ${esc(fmtDMY(x.effective))}">Remove</button></div>`).join('')
-    : '<div class="small">Using the defaults: 2,200 kcal · 160 g protein · 245 g carbs · 65 g fat · 35 g fibre.</div>';
+    : `<div class="small">Using the defaults from ${esc(fmtDMY(START))}: 2,200 kcal · 160 g protein · 245 g carbs · 65 g fat · 35 g fibre.</div>`;
 }
 
 // --- dialogs ---
