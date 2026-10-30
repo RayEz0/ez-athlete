@@ -9,7 +9,7 @@ const KEY_V4 = 'ez76_tracker_v4';       // legacy state — read for migration, 
 const SIDEBAR_KEY = 'ez76_sidebar_collapsed';
 const DIRTY_KEY = 'ez_sync_dirty';
 const API = '/api/state';
-const START = '2026-10-22';             // Day 1 (program start). Streak, consistency, weekly stats and start weight count from here. No end date.
+const START = '2026-11-01';             // Day 1 (program start). Streak, consistency, weekly stats and start weight count from here. No end date.
 const TARGET_KG = 76, GYM_WEEK_TARGET = 4; // nutrition targets are date-effective: see targetsOn()
 const EZTheme = window.EZTheme; // from js/theme.js
 const THEMES = Object.fromEntries(EZTheme.THEMES.map(([id, , color]) => [id, color]));
